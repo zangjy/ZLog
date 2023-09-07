@@ -1,12 +1,8 @@
 package utils
 
 import (
-	"ZLog/conf"
 	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"os"
-	"strconv"
 )
 
 //
@@ -55,31 +51,10 @@ func NewTokenStr(userId, pwd string, effectiveDate, expiryDate int64, periodRang
 func GetTokenStruct(t string) (err error, tokenStruct *TokenStruct) {
 	tokenStruct = &TokenStruct{}
 	//解密Token
-	if tokenStr, err := Decrypt(t, conf.EncryptingKey); err != nil {
+	if tokenStr, err := Decrypt(t, EncryptingKey); err != nil {
 		return err, nil
 	} else {
 		_ = json.Unmarshal([]byte(tokenStr), &tokenStruct)
 		return nil, tokenStruct
 	}
-}
-
-//
-// Decimal
-//  @Description: 保留两位小数
-//  @param value
-//  @return float64
-//
-func Decimal(value float64) float64 {
-	value, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", value), 64)
-	return value
-}
-
-//
-// MkDir
-//  @Description: 创建文件夹
-//  @param path
-//  @return err
-//
-func MkDir(path string) (err error) {
-	return os.MkdirAll(path, os.ModePerm)
 }

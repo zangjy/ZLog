@@ -25,8 +25,6 @@ type ECDHCong struct {
 }
 
 var (
-	// EncryptingKey 加解密Token的密钥
-	EncryptingKey = "5dfjNGwIO4Kt5C2WcS1qsApGb3c8DCyd"
 	// GlobalConf 全局的配置信息
 	GlobalConf = new(AppConf)
 )

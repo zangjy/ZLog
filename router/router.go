@@ -3,6 +3,8 @@ package router
 import (
 	"ZLog/controller"
 	"ZLog/middlewares"
+	"ZLog/models"
+	"ZLog/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-colorable"
 	"net/http"
@@ -23,28 +25,31 @@ func SetUpRouter(addr string) (err error) {
 	gin.ForceConsoleColor()
 	//默认配置
 	r := gin.Default()
+	//使用解密中间件
+	r.Use(middlewares.DecryptMiddleware())
 	//该分组不校验Token
-	group1 := r.Group(V1Path)
+	group1 := r.Group(utils.V1Path)
 	{
 		//登录
-		group1.POST(LoginPath, controller.Login)
+		group1.POST(utils.LoginPath, controller.Login)
 		//交换公钥
-		group1.POST(ExchangePubKeyPath, controller.ExchangePubKey)
+		group1.POST(utils.ExchangePubKeyPath, controller.ExchangePubKey)
 		//共享密钥验证
-		group1.POST(VerifySharedKeyPath, controller.VerifySharedKey)
-		//绑定设备
-		group1.POST(DeviceRegisterPath, controller.DeviceRegister)
+		group1.POST(utils.VerifySharedKeyPath, controller.VerifySharedKey)
+		//设备注册
+		group1.POST(utils.DeviceRegisterPath, controller.DeviceRegister)
 	}
 	//该分组使用了校验Token的中间件
-	group2 := r.Group(V1Path).Use(middlewares.Verify())
+	group2 := r.Group(utils.V1Path).Use(middlewares.Verify())
 	{
 		//创建一个应用
-		group2.POST(CreateAppPath, controller.CreateApp)
+		group2.POST(utils.CreateAppPath, controller.CreateApp)
 	}
+	//未匹配到路由时的处理
 	r.NoRoute(func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, gin.H{
-			"err_msg": "无效路径",
-			"status":  "404",
+		c.JSON(http.StatusNotFound, models.DefaultOutputStruct{
+			Status: utils.StatusNotFoundCode,
+			ErrMsg: "未找到该路由",
 		})
 	})
 	err = r.Run(addr)

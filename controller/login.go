@@ -1,12 +1,11 @@
 package controller
 
 import (
-	"ZLog/conf"
+	"ZLog/middlewares"
 	"ZLog/models"
 	"ZLog/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"net/http"
 	"time"
 )
 
@@ -20,20 +19,20 @@ func Login(c *gin.Context) {
 	output := models.LoginOutputStruct{}
 	_ = c.ShouldBindWith(&input, binding.JSON)
 	if len(input.UserName) == 0 || len(input.Password) == 0 {
-		output.Status = "0001"
+		output.Status = utils.ErrorCode
 		output.ErrMsg = "必要参数缺失"
 	} else {
 		if getUserInfoErr, user := models.GetUserInfo(input.UserName, input.Password); getUserInfoErr != nil {
-			output.Status = "0001"
+			output.Status = utils.ErrorCode
 			output.ErrMsg = "帐号密码不正确"
 		} else {
 			tokenStr, _ := newToken(user.UserName, user.Password)
-			output.Status = "0000"
+			output.Status = utils.SuccessCode
 			output.ErrMsg = "登录成功"
 			output.Token = &tokenStr
 		}
 	}
-	c.JSON(http.StatusOK, output)
+	middlewares.ProcessResultData(c, output)
 }
 
 func newToken(userId, passWord string) (string, error) {
@@ -47,5 +46,5 @@ func newToken(userId, passWord string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return utils.Encrypt(tokenStr, conf.EncryptingKey)
+	return utils.Encrypt(tokenStr, utils.EncryptingKey)
 }

@@ -49,7 +49,7 @@ type VerifySharedKeyInputStruct struct {
 // VerifySharedKeyOutputStruct 验证共享密钥返回结构体
 type VerifySharedKeyOutputStruct struct {
 	DefaultOutputStruct
-	VerifyData string `json:"verify_data"`
+	DecryptData string `json:"decrypt_data"`
 }
 
 // DeviceRegisterInputStruct 设备注册传入结构体

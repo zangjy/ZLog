@@ -1,11 +1,11 @@
 package controller
 
 import (
+	"ZLog/middlewares"
 	"ZLog/models"
 	"ZLog/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"net/http"
 )
 
 func VerifySharedKey(c *gin.Context) {
@@ -13,18 +13,18 @@ func VerifySharedKey(c *gin.Context) {
 	output := models.VerifySharedKeyOutputStruct{}
 	_ = c.ShouldBindWith(&input, binding.JSON)
 	if len(input.TmpSessionID) == 0 || len(input.VerifyData) == 0 {
-		output.Status = "0001"
+		output.Status = utils.ErrorCode
 		output.ErrMsg = "必要参数缺失"
 	} else if keyPair, err := models.GetKeyPairBySessionId(input.TmpSessionID); err != nil {
-		output.Status = "0001"
-		output.ErrMsg = "未找到此客户端的公钥，请先和服务端进行公钥交换"
-	} else if verifyData, err := utils.Decrypt(input.VerifyData, keyPair.SharedKey); err != nil {
-		output.Status = "0000"
+		output.Status = utils.ErrorCode
+		output.ErrMsg = "未找到此客户端的密钥对，请先和服务端进行公钥交换"
+	} else if decryptData, err := utils.Decrypt(input.VerifyData, keyPair.SharedKey); err != nil {
+		output.Status = utils.SuccessCode
 		output.ErrMsg = "验证失败"
 	} else {
-		output.Status = "0000"
-		output.ErrMsg = "解密数据完成，请根据返回的数据进行验证"
-		output.VerifyData = verifyData
+		output.Status = utils.SuccessCode
+		output.ErrMsg = "服务端已对数据进行解密，如果解密结果正确，则说明共享密钥验证成功，否则请检查客户端代码并再次尝试"
+		output.DecryptData = decryptData
 	}
-	c.JSON(http.StatusOK, output)
+	middlewares.ProcessResultData(c, output)
 }
