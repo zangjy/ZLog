@@ -2,6 +2,7 @@ package main
 
 import (
 	"ZLog/conf"
+	"ZLog/controller"
 	"ZLog/dao"
 	"ZLog/models"
 	"ZLog/router"
@@ -15,7 +16,7 @@ func main() {
 	fmt.Println("开发者:ZangJiaYu")
 	fmt.Println("系统版本:1.0")
 	fmt.Println("********************")
-	
+
 	// 获取或创建ECDH配置节
 	if iniFile, loadFileErr := ini.Load("./conf/conf.ini"); loadFileErr != nil {
 		fmt.Printf("加载配置文件失败:%v\n", loadFileErr)
@@ -70,7 +71,12 @@ func main() {
 		return
 	}
 
-	//初始化Gin
+	//初始化日志解析服务
+	controller.InitZLogProcessor(utils.LogFileRootPath)
+	controller.ZLogProcessorInstance.Start()
+	defer controller.ZLogProcessorInstance.Stop()
+
+	//启动服务
 	if err := router.SetUpRouter(conf.GlobalConf.NetConf.Ip + ":" + conf.GlobalConf.NetConf.Port); err != nil {
 		fmt.Printf("启动服务失败:%v\n", err)
 		return

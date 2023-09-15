@@ -1,5 +1,9 @@
 package models
 
+import (
+	"ZLog/dao"
+)
+
 type Task struct {
 	Id         uint `gorm:"primaryKey"`
 	SessionId  string
@@ -9,4 +13,19 @@ type Task struct {
 	TaskId     string `gorm:"unique"`
 	FileName   string
 	State      int
+}
+
+//
+// GetSessionId
+//  @Description: 根据TaskId获取SessionId
+//  @param taskId
+//  @return string
+//  @return error
+//
+func GetSessionId(taskId string) (string, error) {
+	task := Task{}
+	if err := dao.DB.Table("task").Where("task_id = ?", taskId).Select("session_id").First(&task).Error; err != nil {
+		return "", err
+	}
+	return task.SessionId, nil
 }

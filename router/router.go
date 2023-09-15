@@ -18,7 +18,7 @@ import (
 //
 func SetUpRouter(addr string) (err error) {
 	//设置Gin的模式
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
 	//解决乱码问题
 	gin.DefaultWriter = colorable.NewColorableStdout()
 	//日志带颜色

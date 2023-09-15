@@ -9,6 +9,7 @@ const (
 	ErrorCode          = "0001"
 	SessionId          = "SESSION_ID"
 	TmpSessionId       = "TMP_SESSION_ID"
+	LogFileRootPath    = "./static/zlog"
 )
 
 const (

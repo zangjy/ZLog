@@ -18,7 +18,7 @@ func VerifySharedKey(c *gin.Context) {
 	} else if keyPair, err := models.GetKeyPairBySessionId(input.TmpSessionID); err != nil {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "未找到此客户端的密钥对，请先和服务端进行公钥交换"
-	} else if decryptData, err := utils.Decrypt(input.VerifyData, keyPair.SharedKey); err != nil {
+	} else if decryptData, err := utils.DecryptString(input.VerifyData, keyPair.SharedKey); err != nil {
 		output.Status = utils.SuccessCode
 		output.ErrMsg = "验证失败"
 	} else {

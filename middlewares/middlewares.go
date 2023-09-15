@@ -108,7 +108,7 @@ func DecryptMiddleware() gin.HandlerFunc {
 				return
 			}
 			//解密请求体数据
-			resultData, err := utils.Decrypt(string(body), keyPair.SharedKey)
+			resultData, err := utils.DecryptString(string(body), keyPair.SharedKey)
 			if err != nil {
 				ProcessResultData(c, models.DefaultOutputStruct{
 					Status: utils.ErrorCode,
@@ -160,7 +160,7 @@ func ProcessResultData(c *gin.Context, data interface{}) {
 		})
 		return
 	}
-	resultData, err := utils.Encrypt(string(jsonData), keyPair.SharedKey)
+	resultData, err := utils.EncryptString(string(jsonData), keyPair.SharedKey)
 	if err != nil {
 		c.JSON(http.StatusOK, models.DefaultOutputStruct{
 			Status: utils.ErrorCode,
@@ -168,7 +168,7 @@ func ProcessResultData(c *gin.Context, data interface{}) {
 		})
 		return
 	}
-	c.String(http.StatusOK, string(resultData))
+	c.String(http.StatusOK, resultData)
 }
 
 //

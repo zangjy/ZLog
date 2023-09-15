@@ -10,8 +10,8 @@ import (
 	"math/big"
 )
 
-// GenerateKeyPair 生成一个密钥对，包括公钥和私钥。
-// 返回值包括Base64编码的公钥和私钥，或者在生成密钥对过程中出现错误时返回错误。
+// GenerateKeyPair 生成一个密钥对，包括公钥和私钥
+// 返回值包括Base64编码的公钥和私钥，或者在生成密钥对过程中出现错误时返回错误
 func GenerateKeyPair() (string, string, error) {
 	// 使用椭圆曲线P-256生成私钥
 	curve := elliptic.P256()
@@ -33,9 +33,9 @@ func GenerateKeyPair() (string, string, error) {
 	return encodedPublicKey, encodedPrivateKey, nil
 }
 
-// GenerateSharedSecret 生成共享密钥。
-// 参数base64PublicKey和base64PrivateKey是Base64编码的公钥和私钥。
-// 返回值是Base64编码的共享密钥，或者在生成共享密钥过程中出现错误时返回错误。
+// GenerateSharedSecret 生成共享密钥
+// 参数base64PublicKey和base64PrivateKey是Base64编码的公钥和私钥
+// 返回值是Base64编码的共享密钥，或者在生成共享密钥过程中出现错误时返回错误
 func GenerateSharedSecret(base64PublicKey, base64PrivateKey string) (string, error) {
 	// 使用椭圆曲线P-256
 	curve := elliptic.P256()

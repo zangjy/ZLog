@@ -3,6 +3,8 @@ package utils
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"os"
+	"path/filepath"
 )
 
 //
@@ -51,10 +53,31 @@ func NewTokenStr(userId, pwd string, effectiveDate, expiryDate int64, periodRang
 func GetTokenStruct(t string) (err error, tokenStruct *TokenStruct) {
 	tokenStruct = &TokenStruct{}
 	//解密Token
-	if tokenStr, err := Decrypt(t, EncryptingKey); err != nil {
+	if tokenStr, err := DecryptString(t, EncryptingKey); err != nil {
 		return err, nil
 	} else {
 		_ = json.Unmarshal([]byte(tokenStr), &tokenStruct)
 		return nil, tokenStruct
 	}
+}
+
+// DeleteDirectory 删除目录以及目录下的文件
+func DeleteDirectory(dirPath string) error {
+	//获取目录下的所有文件和子目录
+	entries, err := filepath.Glob(filepath.Join(dirPath, "*"))
+	if err != nil {
+		return err
+	}
+
+	//删除目录下的所有文件和子目录
+	for _, entry := range entries {
+		err := os.Remove(entry) //调用删除文件的方法
+		if err != nil {
+			return err
+		}
+	}
+
+	//删除目录本身
+	err = os.Remove(dirPath)
+	return err
 }

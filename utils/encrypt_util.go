@@ -8,78 +8,117 @@ import (
 	"io"
 )
 
-// Encrypt 函数将输入数据使用AES算法加密，并返回Base64编码的加密结果。
-func Encrypt(data string, key string) (string, error) {
-	// 处理密钥长度
+const (
+	ivLength = 16
+)
+
+// EncryptString 使用AES算法加密数据，返回Base64编码的加密结果
+func EncryptString(data string, key string) (string, error) {
+	iv, err := generateRandomIV()
+	if err != nil {
+		return "", err
+	}
+
 	adjustedKey := adjustKeySize(key)
 
-	// 创建AES密码块
 	block, err := aes.NewCipher([]byte(adjustedKey))
 	if err != nil {
 		return "", err
 	}
 
-	// 创建初始化向量（IV）
-	iv := make([]byte, aes.BlockSize)
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		return "", err
-	}
+	cipherText := make([]byte, len(data))
 
-	// 创建CFB加密器
-	encrypter := cipher.NewCFBEncrypter(block, iv)
+	cipher.NewCFBEncrypter(block, iv).XORKeyStream(cipherText, []byte(data))
 
-	// 加密数据
-	encrypted := make([]byte, len(data))
-	encrypter.XORKeyStream(encrypted, []byte(data))
-
-	// 将IV与加密数据合并并返回Base64编码结果
-	combined := append(iv, encrypted...)
+	combined := append(iv, cipherText...)
 	return base64.StdEncoding.EncodeToString(combined), nil
 }
 
-// Decrypt 函数将Base64编码的加密数据使用AES算法解密，并返回原始数据。
-func Decrypt(data string, key string) (string, error) {
-	// 处理密钥长度
+// EncryptBytes 使用AES算法加密数据，返回加密后的字节数组
+func EncryptBytes(data []byte, key string) ([]byte, error) {
+	iv, err := generateRandomIV()
+	if err != nil {
+		return nil, err
+	}
+
 	adjustedKey := adjustKeySize(key)
 
-	// 解码Base64数据
+	block, err := aes.NewCipher([]byte(adjustedKey))
+	if err != nil {
+		return nil, err
+	}
+
+	cipherText := make([]byte, len(data))
+
+	cipher.NewCFBEncrypter(block, iv).XORKeyStream(cipherText, data)
+
+	return append(iv, cipherText...), nil
+}
+
+// DecryptString 使用AES算法解密Base64编码的加密数据，返回解密后的字符串
+func DecryptString(data string, key string) (string, error) {
 	combined, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		return "", err
 	}
 
-	// 提取IV和加密数据
-	iv := combined[:aes.BlockSize]
-	encrypted := combined[aes.BlockSize:]
+	iv := combined[:ivLength]
+	cipherText := combined[ivLength:]
 
-	// 创建AES密码块
+	adjustedKey := adjustKeySize(key)
+
 	block, err := aes.NewCipher([]byte(adjustedKey))
 	if err != nil {
 		return "", err
 	}
 
-	// 创建CFB解密器
-	decrypter := cipher.NewCFBDecrypter(block, iv)
+	plainText := make([]byte, len(cipherText))
 
-	// 解密数据
-	decrypted := make([]byte, len(encrypted))
-	decrypter.XORKeyStream(decrypted, encrypted)
+	cipher.NewCFBDecrypter(block, iv).XORKeyStream(plainText, cipherText)
 
-	// 返回解密后的原始数据
-	return string(decrypted), nil
+	return string(plainText), nil
 }
 
-// adjustKeySize 函数用于处理密钥长度，确保它是16、24或32字节长。
+// DecryptBytes 使用AES算法解密字节数组，返回解密后的字节数组
+func DecryptBytes(data []byte, key string) ([]byte, error) {
+	iv := data[:ivLength]
+	cipherText := data[ivLength:]
+
+	adjustedKey := adjustKeySize(key)
+
+	block, err := aes.NewCipher([]byte(adjustedKey))
+	if err != nil {
+		return nil, err
+	}
+
+	plainText := make([]byte, len(cipherText))
+
+	cipher.NewCFBDecrypter(block, iv).XORKeyStream(plainText, cipherText)
+
+	return plainText, nil
+}
+
+// adjustKeySize 处理密钥长度，确保它是16、24或32字节长
 func adjustKeySize(key string) string {
 	keyLength := len(key)
-	switch {
-	case keyLength == 16, keyLength == 24, keyLength == 32:
+
+	if keyLength == 16 || keyLength == 24 || keyLength == 32 {
 		return key
-	case keyLength < 16:
+	} else if keyLength < 16 {
 		return key + string(make([]byte, 16-keyLength))
-	case keyLength < 24:
+	} else if keyLength < 24 {
 		return key + string(make([]byte, 24-keyLength))
-	default:
+	} else {
 		return key[:32]
 	}
+}
+
+// generateRandomIV 生成随机的初始化向量 (IV)
+func generateRandomIV() ([]byte, error) {
+	iv := make([]byte, ivLength)
+	_, err := io.ReadFull(rand.Reader, iv)
+	if err != nil {
+		return nil, err
+	}
+	return iv, nil
 }

@@ -46,5 +46,5 @@ func newToken(userId, passWord string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return utils.Encrypt(tokenStr, utils.EncryptingKey)
+	return utils.EncryptString(tokenStr, utils.EncryptingKey)
 }
