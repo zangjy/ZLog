@@ -19,23 +19,16 @@ func GetTokenFromHeader(c *gin.Context) string {
 
 // TokenStruct Token的结构体
 type TokenStruct struct {
-	UserId   string `json:"user_id"`
-	Password string `json:"password"`
-	//生效日期(时间戳)
-	EffectiveDate int64 `json:"effective_date"`
-	//失效日期(时间戳)
-	ExpiryDate int64 `json:"expiry_date"`
-	//允许在一段时间范围内重新获取,天数
-	PeriodRange int `json:"period_range"`
+	UserId    string `json:"user_id"`
+	Password  string `json:"password"`
+	SessionId string `json:"session_id"`
 }
 
-func NewTokenStr(userId, pwd string, effectiveDate, expiryDate int64, periodRange int) (string, error) {
+func NewTokenStr(userId, pwd, sessionId string) (string, error) {
 	tokenBytes, err := json.Marshal(TokenStruct{
-		UserId:        userId,
-		Password:      pwd,
-		EffectiveDate: effectiveDate,
-		ExpiryDate:    expiryDate,
-		PeriodRange:   periodRange,
+		UserId:    userId,
+		Password:  pwd,
+		SessionId: sessionId,
 	})
 	if err != nil {
 		return "", err

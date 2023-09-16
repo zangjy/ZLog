@@ -26,11 +26,11 @@ type Device struct {
 //  @param deviceId
 //  @param clientPubKey
 //  @param sharedKey
-//  @param tmpSessionId
+//  @param TmpSessionId
 //  @return string
 //  @return bool
 //
-func DeviceRegister(appId string, deviceType int, deviceName string, deviceId string, clientPubKey string, sharedKey string, tmpSessionId string) (string, bool) {
+func DeviceRegister(appId string, deviceType int, deviceName string, deviceId string, clientPubKey string, sharedKey string, TmpSessionId string) (string, bool) {
 	//在数据库中查找记录
 	var existingDevice Device
 	result := dao.DB.Table("device").Where("device_id = ?", deviceId).First(&existingDevice)
@@ -45,12 +45,12 @@ func DeviceRegister(appId string, deviceType int, deviceName string, deviceId st
 				DeviceId:     deviceId,
 				ClientPubKey: clientPubKey,
 				SharedKey:    sharedKey,
-				SessionID:    tmpSessionId, //使用传入的 tmpSessionId
+				SessionID:    TmpSessionId, //使用传入的 TmpSessionId
 			}
 			if err := dao.DB.Table("device").Create(&newDevice).Error; err != nil {
 				return "", false
 			}
-			return tmpSessionId, true
+			return TmpSessionId, true
 		}
 		//其他错误
 		return "", false

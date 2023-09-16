@@ -13,6 +13,7 @@ type Task struct {
 	TaskId     string `gorm:"unique"`
 	FileName   string
 	State      int
+	Msg        string
 }
 
 //

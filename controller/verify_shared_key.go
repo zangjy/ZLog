@@ -12,10 +12,10 @@ func VerifySharedKey(c *gin.Context) {
 	input := models.VerifySharedKeyInputStruct{}
 	output := models.VerifySharedKeyOutputStruct{}
 	_ = c.ShouldBindWith(&input, binding.JSON)
-	if len(input.TmpSessionID) == 0 || len(input.VerifyData) == 0 {
+	if len(input.TmpSessionId) == 0 || len(input.VerifyData) == 0 {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "必要参数缺失"
-	} else if keyPair, err := models.GetKeyPairBySessionId(input.TmpSessionID); err != nil {
+	} else if keyPair, err := models.GetKeyPairBySessionId(input.TmpSessionId); err != nil {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "未找到此客户端的密钥对，请先和服务端进行公钥交换"
 	} else if decryptData, err := utils.DecryptString(input.VerifyData, keyPair.SharedKey); err != nil {

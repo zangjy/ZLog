@@ -7,6 +7,7 @@ import (
 	"ZLog/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"time"
 )
 
 func ExchangePubKey(c *gin.Context) {
@@ -22,12 +23,17 @@ func ExchangePubKey(c *gin.Context) {
 	} else {
 		//生成sessionId
 		sessionId := utils.WorkerInstance.GetId()
+		//过期时间
+		expireValue := 1 * time.Hour
+		if input.ExpireSeconds > 0 {
+			expireValue = time.Duration(input.ExpireSeconds) * time.Second
+		}
 		//将临时的SessionId对应的客户端公钥和共享密钥存入Map中
-		utils.Put(sessionId, input.ClientPubKey, sharedKey)
+		utils.Put(sessionId, input.ClientPubKey, sharedKey, expireValue)
 		//返回数据
 		output.Status = utils.SuccessCode
 		output.ErrMsg = "操作成功"
-		output.TmpSessionID = sessionId
+		output.TmpSessionId = sessionId
 		output.ServerPubKey = conf.GlobalConf.ECDHCong.PubKey
 	}
 	middlewares.ProcessResultData(c, output)

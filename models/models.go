@@ -7,8 +7,9 @@ type DefaultOutputStruct struct {
 
 // LoginInputStruct 登录传入结构体
 type LoginInputStruct struct {
-	UserName string `json:"user_name"`
-	Password string `json:"password"`
+	UserName  string `json:"user_name"`
+	Password  string `json:"password"`
+	SessionId string `json:"session_id"`
 }
 
 // LoginOutputStruct 登录返回结构体
@@ -30,19 +31,20 @@ type CreateAppOutputStruct struct {
 
 // ExchangePubKeyInputStruct 交换公钥传入结构体
 type ExchangePubKeyInputStruct struct {
-	ClientPubKey string `json:"client_pub_key"`
+	ClientPubKey  string `json:"client_pub_key"`
+	ExpireSeconds int    `json:"expire_seconds"`
 }
 
 // ExchangePubKeyOutputStruct 交换公钥返回结构体
 type ExchangePubKeyOutputStruct struct {
 	DefaultOutputStruct
-	TmpSessionID string `json:"tmp_session_id"`
+	TmpSessionId string `json:"tmp_session_id"`
 	ServerPubKey string `json:"server_pub_key"`
 }
 
 // VerifySharedKeyInputStruct 验证共享密钥传入结构体
 type VerifySharedKeyInputStruct struct {
-	TmpSessionID string `json:"tmp_session_id"`
+	TmpSessionId string `json:"tmp_session_id"`
 	VerifyData   string `json:"verify_data"`
 }
 
@@ -58,11 +60,29 @@ type DeviceRegisterInputStruct struct {
 	DeviceType   int    `json:"device_type"`
 	DeviceName   string `json:"device_name"`
 	DeviceId     string `json:"device_id"`
-	TmpSessionID string `json:"tmp_session_id"`
+	TmpSessionId string `json:"tmp_session_id"`
 }
 
 // DeviceRegisterOutputStruct 设备注册返回结构体
 type DeviceRegisterOutputStruct struct {
 	DefaultOutputStruct
 	SessionId string `json:"session_id"`
+}
+
+// PutOnlineLogInputStruct 上传实时日志传入结构体
+type PutOnlineLogInputStruct struct {
+	Data []PutOnlineLogInfoStruct `json:"data"`
+}
+
+// PutOnlineLogInfoStruct  实时日志结构体
+type PutOnlineLogInfoStruct struct {
+	SessionId     string `json:"session_id"`
+	Sequence      int64  `json:"sequence"`
+	SystemVersion string `json:"system_version"`
+	AppVersion    string `json:"app_version"`
+	TimeStamp     int64  `json:"time_stamp"`
+	LogLevel      int    `json:"log_level"`
+	Identify      string `json:"identify"`
+	Tag           string `json:"tag"`
+	Msg           string `json:"msg"`
 }

@@ -8,15 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
-	"time"
+	"strings"
 )
 
 //
-// Verify
+// VerifyToken
 //  @Description: 校验Token的中间件
 //  @return gin.HandlerFunc
 //
-func Verify() gin.HandlerFunc {
+func VerifyToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//从Header中取出Token
 		token := c.Request.Header.Get("token")
@@ -45,7 +45,8 @@ func Verify() gin.HandlerFunc {
 		}
 
 		//校验Token是否已过期
-		if (time.Now().Unix() - tokenStruct.ExpiryDate) > 0 {
+		_, state := utils.Get(tokenStruct.SessionId)
+		if !state {
 			out := models.DefaultOutputStruct{
 				Status: utils.ErrorCode,
 				ErrMsg: "Token已过期",
@@ -88,8 +89,8 @@ func DecryptMiddleware() gin.HandlerFunc {
 				return
 			}
 			//从缓存中取出密钥对
-			keyPair, state := utils.Get(sessionId)
-			if !state {
+			keyPair, err := models.GetKeyPairBySessionId(sessionId)
+			if err != nil {
 				ProcessResultData(c, models.DefaultOutputStruct{
 					Status: utils.ErrorCode,
 					ErrMsg: "未找到此客户端的密钥对，请先和服务端进行公钥交换",
@@ -144,8 +145,8 @@ func ProcessResultData(c *gin.Context, data interface{}) {
 		})
 		return
 	}
-	keyPair, state := utils.Get(sessionId)
-	if !state {
+	keyPair, err := models.GetKeyPairBySessionId(sessionId)
+	if err != nil {
 		c.JSON(http.StatusOK, models.DefaultOutputStruct{
 			Status: utils.ErrorCode,
 			ErrMsg: "未找到此客户端的密钥对，请先和服务端进行公钥交换",
@@ -178,18 +179,18 @@ func ProcessResultData(c *gin.Context, data interface{}) {
 // @return bool
 //
 func shouldEncryptDecrypt(url string) bool {
-	//unNeedDecryptUrls := []string{
-	//	utils.LoginPath,
-	//	utils.ExchangePubKeyPath,
-	//	utils.VerifySharedKeyPath,
-	//	utils.CreateAppPath,
-	//}
-	//for _, unNeedUrl := range unNeedDecryptUrls {
-	//	if strings.Contains(url, unNeedUrl) {
-	//		return false
-	//	}
-	//}
-	return false
+	unNeedUrls := []string{
+		utils.ExchangePubKeyPath,
+		utils.VerifySharedKeyPath,
+		utils.LoginPath,
+		utils.CreateAppPath,
+	}
+	for _, unNeedUrl := range unNeedUrls {
+		if strings.Contains(url, unNeedUrl) {
+			return false
+		}
+	}
+	return true
 }
 
 //

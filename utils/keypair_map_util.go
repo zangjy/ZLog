@@ -1,51 +1,74 @@
 package utils
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
-// KeyPair 包含公钥和共享密钥。
+const defaultExpireAfter = 1 * time.Hour
+
 type KeyPair struct {
 	PublicKey string
 	SharedKey string
+	ExpireAt  time.Time
 }
 
-// GlobalMap 包含全局的 Map 和一个互斥锁用于并发控制。
-type GlobalMap struct {
+type globalMap struct {
 	data map[string]KeyPair
 	mu   sync.Mutex
 }
 
-var globalMap = &GlobalMap{
+var globalMapInstance = &globalMap{
 	data: make(map[string]KeyPair),
 }
 
-// Put 将键值对插入全局 Map 中。
-func Put(key, publicKey, sharedSecret string) {
-	globalMap.mu.Lock()
-	defer globalMap.mu.Unlock()
-	globalMap.data[key] = KeyPair{
+func Put(key, publicKey, sharedSecret string, expireAfter ...time.Duration) {
+	globalMapInstance.mu.Lock()
+	defer globalMapInstance.mu.Unlock()
+
+	expireDuration := defaultExpireAfter
+
+	if len(expireAfter) > 0 {
+		expireDuration = expireAfter[0]
+	}
+
+	expireAt := time.Now().Add(expireDuration)
+
+	globalMapInstance.data[key] = KeyPair{
 		PublicKey: publicKey,
 		SharedKey: sharedSecret,
+		ExpireAt:  expireAt,
 	}
+
+	//启动定时器，在过期后删除KeyPair
+	go func() {
+		<-time.After(expireDuration)
+		Delete(key) //调用删除方法
+	}()
 }
 
-// Get 从全局 Map 中根据键检索值。
 func Get(key string) (KeyPair, bool) {
-	globalMap.mu.Lock()
-	defer globalMap.mu.Unlock()
-	value, ok := globalMap.data[key]
+	globalMapInstance.mu.Lock()
+	defer globalMapInstance.mu.Unlock()
+	value, ok := globalMapInstance.data[key]
+
+	//如果KeyPair过期，删除它
+	if ok && time.Now().After(value.ExpireAt) {
+		Delete(key) //调用删除方法
+		return KeyPair{}, false
+	}
+
 	return value, ok
 }
 
-// Delete 从全局 Map 中删除键值对。
 func Delete(key string) {
-	globalMap.mu.Lock()
-	defer globalMap.mu.Unlock()
-	delete(globalMap.data, key)
+	globalMapInstance.mu.Lock()
+	defer globalMapInstance.mu.Unlock()
+	delete(globalMapInstance.data, key)
 }
 
-// Size 返回全局 Map 中键值对的数量。
 func Size() int {
-	globalMap.mu.Lock()
-	defer globalMap.mu.Unlock()
-	return len(globalMap.data)
+	globalMapInstance.mu.Lock()
+	defer globalMapInstance.mu.Unlock()
+	return len(globalMapInstance.data)
 }

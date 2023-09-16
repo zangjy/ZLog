@@ -19,4 +19,5 @@ const (
 	VerifySharedKeyPath = "/verify_shared_key"
 	DeviceRegisterPath  = "/device_register"
 	CreateAppPath       = "/create_app"
+	PutOnlineLog        = "/put_online_log"
 )

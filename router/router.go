@@ -30,17 +30,19 @@ func SetUpRouter(addr string) (err error) {
 	//该分组不校验Token
 	group1 := r.Group(utils.V1Path)
 	{
-		//登录
-		group1.POST(utils.LoginPath, controller.Login)
 		//交换公钥
 		group1.POST(utils.ExchangePubKeyPath, controller.ExchangePubKey)
 		//共享密钥验证
 		group1.POST(utils.VerifySharedKeyPath, controller.VerifySharedKey)
+		//登录
+		group1.POST(utils.LoginPath, controller.Login)
 		//设备注册
 		group1.POST(utils.DeviceRegisterPath, controller.DeviceRegister)
+		//上传实时日志
+		group1.POST(utils.PutOnlineLog, controller.PutOnlineLog)
 	}
 	//该分组使用了校验Token的中间件
-	group2 := r.Group(utils.V1Path).Use(middlewares.Verify())
+	group2 := r.Group(utils.V1Path).Use(middlewares.VerifyToken())
 	{
 		//创建一个应用
 		group2.POST(utils.CreateAppPath, controller.CreateApp)
