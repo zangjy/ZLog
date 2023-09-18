@@ -7,9 +7,8 @@ type DefaultOutputStruct struct {
 
 // LoginInputStruct 登录传入结构体
 type LoginInputStruct struct {
-	UserName  string `json:"user_name"`
-	Password  string `json:"password"`
-	SessionId string `json:"session_id"`
+	UserName string `json:"user_name"`
+	Password string `json:"password"`
 }
 
 // LoginOutputStruct 登录返回结构体
@@ -56,11 +55,10 @@ type VerifySharedKeyOutputStruct struct {
 
 // DeviceRegisterInputStruct 设备注册传入结构体
 type DeviceRegisterInputStruct struct {
-	AppId        string `json:"app_id"`
-	DeviceType   int    `json:"device_type"`
-	DeviceName   string `json:"device_name"`
-	DeviceId     string `json:"device_id"`
-	TmpSessionId string `json:"tmp_session_id"`
+	AppId      string `json:"app_id"`
+	DeviceType int    `json:"device_type"`
+	DeviceName string `json:"device_name"`
+	DeviceId   string `json:"device_id"`
 }
 
 // DeviceRegisterOutputStruct 设备注册返回结构体
@@ -76,7 +74,6 @@ type PutOnlineLogInputStruct struct {
 
 // PutOnlineLogInfoStruct  实时日志结构体
 type PutOnlineLogInfoStruct struct {
-	SessionId     string `json:"session_id"`
 	Sequence      int64  `json:"sequence"`
 	SystemVersion string `json:"system_version"`
 	AppVersion    string `json:"app_version"`
@@ -85,4 +82,28 @@ type PutOnlineLogInfoStruct struct {
 	Identify      string `json:"identify"`
 	Tag           string `json:"tag"`
 	Msg           string `json:"msg"`
+}
+
+// GetTaskInputStruct 查询任务的传入结构体
+type GetTaskInputStruct struct {
+	DeviceType int `form:"device_type"`
+}
+
+// GetTaskOutputStruct 查询任务的返回结构体
+type GetTaskOutputStruct struct {
+	DefaultOutputStruct
+	Data []GetTaskInfoStruct `json:"data"`
+}
+
+// GetTaskInfoStruct 任务结构体
+type GetTaskInfoStruct struct {
+	StartTime int64  `json:"start_time"`
+	EndTime   int64  `json:"end_time"`
+	TaskId    string `json:"task_id"`
+}
+
+// UploadLogFileErrCallBackInputStruct 日志无法上传时的反馈传入结构体
+type UploadLogFileErrCallBackInputStruct struct {
+	TaskId string `json:"task_id"`
+	Msg    string `json:"msg"`
 }

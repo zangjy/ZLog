@@ -12,6 +12,7 @@ func VerifySharedKey(c *gin.Context) {
 	input := models.VerifySharedKeyInputStruct{}
 	output := models.VerifySharedKeyOutputStruct{}
 	_ = c.ShouldBindWith(&input, binding.JSON)
+
 	if len(input.TmpSessionId) == 0 || len(input.VerifyData) == 0 {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "必要参数缺失"
@@ -26,5 +27,6 @@ func VerifySharedKey(c *gin.Context) {
 		output.ErrMsg = "服务端已对数据进行解密，如果解密结果正确，则说明共享密钥验证成功，否则请检查客户端代码并再次尝试"
 		output.DecryptData = decryptData
 	}
+
 	middlewares.ProcessResultData(c, output)
 }

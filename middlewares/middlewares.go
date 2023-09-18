@@ -69,16 +69,16 @@ func VerifyToken() gin.HandlerFunc {
 	}
 }
 
-// DecryptMiddleware 解密中间件
+// DecryptAndDeCompressMiddleware 解密并解压缩中间件
 //  @Description:
 //  @return gin.HandlerFunc
 //
-func DecryptMiddleware() gin.HandlerFunc {
+func DecryptAndDeCompressMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		//判断是否应该进行解密
-		if shouldEncryptDecrypt(c.Request.URL.Path) {
+		//判断是否应该进行解密并解压缩
+		if shouldProcessData(c.Request.URL.Path) && c.Request.Method != "GET" {
 			//从Header中取出SESSION_ID和TMP_SESSION_ID
-			var sessionId = getSessionID(c)
+			var sessionId = utils.GetSessionID(c)
 			//如果SESSION_ID和TMP_SESSION_ID都为空，则返回错误
 			if len(sessionId) == 0 {
 				ProcessResultData(c, models.DefaultOutputStruct{
@@ -118,7 +118,17 @@ func DecryptMiddleware() gin.HandlerFunc {
 				c.Abort()
 				return
 			}
-			//将解密后的数据写入 c.Request.Body，以供后续处理
+			//解压缩数据
+			resultData, err = utils.DecompressString(resultData)
+			if err != nil {
+				ProcessResultData(c, models.DefaultOutputStruct{
+					Status: utils.ErrorCode,
+					ErrMsg: "数据解压缩失败",
+				})
+				c.Abort()
+				return
+			}
+			//将解密并解压缩后的数据写入 c.Request.Body，以供后续处理
 			c.Request.Body = ioutil.NopCloser(bytes.NewReader([]byte(resultData)))
 		}
 		//继续处理
@@ -133,11 +143,11 @@ func DecryptMiddleware() gin.HandlerFunc {
 //  @param data
 //
 func ProcessResultData(c *gin.Context, data interface{}) {
-	if !shouldEncryptDecrypt(c.Request.URL.Path) {
+	if !shouldProcessData(c.Request.URL.Path) {
 		c.JSON(http.StatusOK, data)
 		return
 	}
-	sessionId := getSessionID(c)
+	sessionId := utils.GetSessionID(c)
 	if len(sessionId) == 0 {
 		c.JSON(http.StatusOK, models.DefaultOutputStruct{
 			Status: utils.ErrorCode,
@@ -161,7 +171,15 @@ func ProcessResultData(c *gin.Context, data interface{}) {
 		})
 		return
 	}
-	resultData, err := utils.EncryptString(string(jsonData), keyPair.SharedKey)
+	resultData, err := utils.CompressString(string(jsonData))
+	if err != nil {
+		c.JSON(http.StatusOK, models.DefaultOutputStruct{
+			Status: utils.ErrorCode,
+			ErrMsg: "数据压缩失败",
+		})
+		return
+	}
+	resultData, err = utils.EncryptString(resultData, keyPair.SharedKey)
 	if err != nil {
 		c.JSON(http.StatusOK, models.DefaultOutputStruct{
 			Status: utils.ErrorCode,
@@ -173,39 +191,21 @@ func ProcessResultData(c *gin.Context, data interface{}) {
 }
 
 //
-// shouldEncryptDecrypt
-// @Description: 判断是否应该进行加密解密
+// shouldProcessData
+// @Description: 根据URL判断是否需要加密、解密、压缩、解压缩数据
 // @param url
 // @return bool
 //
-func shouldEncryptDecrypt(url string) bool {
+func shouldProcessData(url string) bool {
 	unNeedUrls := []string{
 		utils.ExchangePubKeyPath,
 		utils.VerifySharedKeyPath,
-		utils.LoginPath,
-		utils.CreateAppPath,
+		utils.UploadLogFilePath,
 	}
 	for _, unNeedUrl := range unNeedUrls {
-		if strings.Contains(url, unNeedUrl) {
+		if strings.HasSuffix(url, unNeedUrl) {
 			return false
 		}
 	}
 	return true
-}
-
-//
-// getSessionID
-//  @Description: 从Header中取出SESSION_ID和TMP_SESSION_ID
-//  @param c
-//  @return string
-//
-func getSessionID(c *gin.Context) string {
-	s1 := c.GetHeader(utils.SessionId)
-	s2 := c.GetHeader(utils.TmpSessionId)
-	if len(s1) > 0 {
-		return s1
-	} else if len(s2) > 0 {
-		return s2
-	}
-	return ""
 }

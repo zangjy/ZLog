@@ -4,11 +4,16 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/base64"
+	"errors"
 	"io"
 )
 
-// Compress 压缩输入的字节数组数据并返回压缩后的字节数组
-func Compress(data []byte) ([]byte, error) {
+// CompressBytes 压缩字节数组
+func CompressBytes(data []byte) ([]byte, error) {
+	if len(data) == 0 {
+		return nil, errors.New("data is empty")
+	}
+
 	var buf bytes.Buffer
 	gz := gzip.NewWriter(&buf)
 
@@ -24,9 +29,13 @@ func Compress(data []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// CompressAndEncodeString 压缩输入的字符串并将其Base64编码为字符串
-func CompressAndEncodeString(input string) (string, error) {
-	compressedData, err := Compress([]byte(input))
+// CompressString 压缩字符串并进行Base64编码
+func CompressString(data string) (string, error) {
+	if len(data) == 0 {
+		return "", errors.New("data is empty")
+	}
+
+	compressedData, err := CompressBytes([]byte(data))
 	if err != nil {
 		return "", err
 	}
@@ -34,8 +43,12 @@ func CompressAndEncodeString(input string) (string, error) {
 	return encodedData, nil
 }
 
-// Decompress 解压缩输入的字节数组数据并返回解压后的字节数组
-func Decompress(data []byte) ([]byte, error) {
+// DecompressBytes 解压缩字节数组数组
+func DecompressBytes(data []byte) ([]byte, error) {
+	if len(data) == 0 {
+		return nil, errors.New("data is empty")
+	}
+
 	var buf bytes.Buffer
 	buf.Write(data)
 	r, err := gzip.NewReader(&buf)
@@ -56,14 +69,18 @@ func Decompress(data []byte) ([]byte, error) {
 	return output.Bytes(), nil
 }
 
-// DecodeAndDecompressString 从Base64编码的字符串解码并解压缩数据，返回解码和解压缩后的字符串数据
-func DecodeAndDecompressString(encodedData string) (string, error) {
-	decodedData, err := base64.StdEncoding.DecodeString(encodedData)
+// DecompressString Base64解码数据并进行解压缩数据
+func DecompressString(data string) (string, error) {
+	if len(data) == 0 {
+		return "", errors.New("data is empty")
+	}
+
+	decodedData, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		return "", err
 	}
 
-	decompressedData, err := Decompress(decodedData)
+	decompressedData, err := DecompressBytes(decodedData)
 	if err != nil {
 		return "", err
 	}

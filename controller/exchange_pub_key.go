@@ -14,6 +14,7 @@ func ExchangePubKey(c *gin.Context) {
 	input := models.ExchangePubKeyInputStruct{}
 	output := models.ExchangePubKeyOutputStruct{}
 	_ = c.ShouldBindWith(&input, binding.JSON)
+
 	if len(input.ClientPubKey) == 0 {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "必要参数缺失"
@@ -36,5 +37,6 @@ func ExchangePubKey(c *gin.Context) {
 		output.TmpSessionId = sessionId
 		output.ServerPubKey = conf.GlobalConf.ECDHCong.PubKey
 	}
+
 	middlewares.ProcessResultData(c, output)
 }

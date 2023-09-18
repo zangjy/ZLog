@@ -3,9 +3,28 @@ package utils
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"io"
+	"mime/multipart"
 	"os"
 	"path/filepath"
 )
+
+//
+// GetSessionID
+//  @Description: 从Header中取出SESSION_ID和TMP_SESSION_ID
+//  @param c
+//  @return string
+//
+func GetSessionID(c *gin.Context) string {
+	s1 := c.GetHeader(SessionId)
+	s2 := c.GetHeader(TmpSessionId)
+	if len(s1) > 0 {
+		return s1
+	} else if len(s2) > 0 {
+		return s2
+	}
+	return ""
+}
 
 //
 // GetTokenFromHeader
@@ -14,7 +33,7 @@ import (
 //  @return string
 //
 func GetTokenFromHeader(c *gin.Context) string {
-	return c.Request.Header.Get("token")
+	return c.GetHeader(Token)
 }
 
 // TokenStruct Token的结构体
@@ -73,4 +92,40 @@ func DeleteDirectory(dirPath string) error {
 	//删除目录本身
 	err = os.Remove(dirPath)
 	return err
+}
+
+// SaveFileToDirectory 保存文件
+func SaveFileToDirectory(file *multipart.FileHeader, directory string) error {
+	//创建目录（如果目录不存在）
+	err := os.MkdirAll(directory, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	//打开上传的文件
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer func(src multipart.File) {
+		_ = src.Close()
+	}(src)
+
+	//创建目标文件
+	dstPath := filepath.Join(directory, file.Filename)
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		return err
+	}
+	defer func(dst *os.File) {
+		_ = dst.Close()
+	}(dst)
+
+	//复制文件内容到目标文件
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

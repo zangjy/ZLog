@@ -50,6 +50,9 @@ func DeviceRegister(appId string, deviceType int, deviceName string, deviceId st
 			if err := dao.DB.Table("device").Create(&newDevice).Error; err != nil {
 				return "", false
 			}
+			//清除SessionId的记录
+			utils.Delete(existingDevice.SessionID)
+
 			return TmpSessionId, true
 		}
 		//其他错误
@@ -63,6 +66,9 @@ func DeviceRegister(appId string, deviceType int, deviceName string, deviceId st
 	if err := dao.DB.Table("device").Save(&existingDevice).Error; err != nil {
 		return "", false
 	}
+
+	//清除SessionId的记录
+	utils.Delete(existingDevice.SessionID)
 
 	return existingDevice.SessionID, true
 }

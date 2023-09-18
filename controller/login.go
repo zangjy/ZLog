@@ -17,7 +17,10 @@ func Login(c *gin.Context) {
 	input := models.LoginInputStruct{}
 	output := models.LoginOutputStruct{}
 	_ = c.ShouldBindWith(&input, binding.JSON)
-	if len(input.UserName) == 0 || len(input.Password) == 0 || len(input.SessionId) == 0 {
+
+	sessionId := utils.GetSessionID(c)
+
+	if len(input.UserName) == 0 || len(input.Password) == 0 || len(sessionId) == 0 {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "必要参数缺失"
 	} else {
@@ -25,12 +28,13 @@ func Login(c *gin.Context) {
 			output.Status = utils.ErrorCode
 			output.ErrMsg = "帐号密码不正确"
 		} else {
-			tokenStr, _ := newToken(user.UserName, user.Password, input.SessionId)
+			tokenStr, _ := newToken(user.UserName, user.Password, sessionId)
 			output.Status = utils.SuccessCode
 			output.ErrMsg = "登录成功"
 			output.Token = &tokenStr
 		}
 	}
+
 	middlewares.ProcessResultData(c, output)
 }
 

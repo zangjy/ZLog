@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"io"
 )
 
@@ -14,6 +15,10 @@ const (
 
 // EncryptString 使用AES算法加密数据，返回Base64编码的加密结果
 func EncryptString(data string, key string) (string, error) {
+	if len(data) == 0 || len(key) == 0 {
+		return "", errors.New("data or key is empty")
+	}
+
 	iv, err := generateRandomIV()
 	if err != nil {
 		return "", err
@@ -36,6 +41,10 @@ func EncryptString(data string, key string) (string, error) {
 
 // EncryptBytes 使用AES算法加密数据，返回加密后的字节数组
 func EncryptBytes(data []byte, key string) ([]byte, error) {
+	if len(data) == 0 || len(key) == 0 {
+		return nil, errors.New("data or key is empty")
+	}
+
 	iv, err := generateRandomIV()
 	if err != nil {
 		return nil, err
@@ -57,6 +66,10 @@ func EncryptBytes(data []byte, key string) ([]byte, error) {
 
 // DecryptString 使用AES算法解密Base64编码的加密数据，返回解密后的字符串
 func DecryptString(data string, key string) (string, error) {
+	if len(data) == 0 || len(key) == 0 {
+		return "", errors.New("data or key is empty")
+	}
+
 	combined, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		return "", err
@@ -81,6 +94,10 @@ func DecryptString(data string, key string) (string, error) {
 
 // DecryptBytes 使用AES算法解密字节数组，返回解密后的字节数组
 func DecryptBytes(data []byte, key string) ([]byte, error) {
+	if len(data) == 0 || len(key) == 0 {
+		return nil, errors.New("data or key is empty")
+	}
+
 	iv := data[:ivLength]
 	cipherText := data[ivLength:]
 

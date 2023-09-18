@@ -12,6 +12,7 @@ func CreateApp(c *gin.Context) {
 	input := models.CreateAppInputStruct{}
 	output := models.CreateAppOutputStruct{}
 	_ = c.ShouldBindWith(&input, binding.JSON)
+
 	if len(input.AppName) == 0 {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "APP名称不能为空"
@@ -25,5 +26,6 @@ func CreateApp(c *gin.Context) {
 			output.AppId = appId
 		}
 	}
+
 	middlewares.ProcessResultData(c, output)
 }

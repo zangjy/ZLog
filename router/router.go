@@ -25,8 +25,8 @@ func SetUpRouter(addr string) (err error) {
 	gin.ForceConsoleColor()
 	//默认配置
 	r := gin.Default()
-	//使用解密中间件
-	r.Use(middlewares.DecryptMiddleware())
+	//使用解密并解压缩中间件
+	r.Use(middlewares.DecryptAndDeCompressMiddleware())
 	//该分组不校验Token
 	group1 := r.Group(utils.V1Path)
 	{
@@ -39,7 +39,13 @@ func SetUpRouter(addr string) (err error) {
 		//设备注册
 		group1.POST(utils.DeviceRegisterPath, controller.DeviceRegister)
 		//上传实时日志
-		group1.POST(utils.PutOnlineLog, controller.PutOnlineLog)
+		group1.POST(utils.PutOnlineLogPath, controller.PutOnlineLog)
+		//查询任务
+		group1.GET(utils.GetTaskPath, controller.GetTask)
+		//上传日志文件
+		group1.POST(utils.UploadLogFilePath, controller.UploadLogFile)
+		//日志无法上传时的反馈
+		group1.POST(utils.UploadLogFileErrCallBack, controller.UploadLogFileErrCallBack)
 	}
 	//该分组使用了校验Token的中间件
 	group2 := r.Group(utils.V1Path).Use(middlewares.VerifyToken())

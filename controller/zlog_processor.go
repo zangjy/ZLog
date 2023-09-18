@@ -218,7 +218,7 @@ func (p *zLogProcessor) processLogFile(taskId string, logFile *os.File, keyPair 
 
 		//根据压缩标志进行解压缩
 		if compressionFlag == 1 {
-			decompressedBytes, err := utils.Decompress(dataBlock)
+			decompressedBytes, err := utils.DecompressBytes(dataBlock)
 			if err != nil {
 				continue //继续下一个循环，丢弃原始数据
 			}
