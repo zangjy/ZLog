@@ -188,10 +188,10 @@ func (p *zLogProcessor) processLogFile(taskId string, logFile *os.File, keyPair 
 	var logData []*models.OfflineLog //用于存储要写入数据库的数据
 
 	reader := bufio.NewReader(logFile)
+
 	for {
-		//读取文件的前6个字节
-		headerData := make([]byte, 6)
-		_, err := io.ReadFull(reader, headerData)
+		//读取头部信息第1个字节
+		firstByte, err := reader.ReadByte()
 		if err != nil {
 			if err == io.EOF {
 				//如果到达文件末尾，退出循环
@@ -200,57 +200,69 @@ func (p *zLogProcessor) processLogFile(taskId string, logFile *os.File, keyPair 
 			return err //返回非EOF错误
 		}
 
-		encryptionFlag := headerData[0]
-		compressionFlag := headerData[1]
-		dataLength := binary.BigEndian.Uint32(headerData[2:6])
-
-		//读取后续数据块
-		dataBlock := make([]byte, dataLength)
-		_, err = io.ReadFull(reader, dataBlock)
-		if err != nil {
-			return err //返回读取数据错误
-		}
-
-		//根据加密标志进行解密
-		if encryptionFlag == 1 && len(keyPair.SharedKey) > 0 {
-			decryptedBytes, err := utils.DecryptBytes(dataBlock, keyPair.SharedKey)
+		if firstByte == 0xFF {
+			//读取头部信息剩余7个字节
+			remainingHeader := make([]byte, 7)
+			_, err := io.ReadFull(reader, remainingHeader)
 			if err != nil {
-				continue //继续下一个循环，丢弃原始数据
+				return err //返回读取数据错误
 			}
-			dataBlock = decryptedBytes
-		}
 
-		//根据压缩标志进行解压缩
-		if compressionFlag == 1 {
-			decompressedBytes, err := utils.DecompressBytes(dataBlock)
-			if err != nil {
-				continue //继续下一个循环，丢弃原始数据
+			//检查最后一个字节是否为0xFF
+			if remainingHeader[6] == 0xFF {
+				encryptionFlag := remainingHeader[0]
+				compressionFlag := remainingHeader[1]
+				dataLength := binary.BigEndian.Uint32(remainingHeader[2:6])
+
+				// 读取后续数据块
+				dataBlock := make([]byte, dataLength)
+				_, err = io.ReadFull(reader, dataBlock)
+				if err != nil {
+					return err //返回读取数据错误
+				}
+
+				//根据加密标志进行解密
+				if encryptionFlag == 1 && len(keyPair.SharedKey) > 0 {
+					decryptedBytes, err := utils.DecryptBytes(dataBlock, keyPair.SharedKey)
+					if err != nil {
+						continue //继续下一个循环，丢弃原始数据
+					}
+					dataBlock = decryptedBytes
+				}
+
+				//根据压缩标志进行解压缩
+				if compressionFlag == 1 {
+					decompressedBytes, err := utils.DecompressBytes(dataBlock)
+					if err != nil {
+						continue //继续下一个循环，丢弃原始数据
+					}
+					dataBlock = decompressedBytes
+				}
+
+				log := &zlog.Log{}
+				err = proto.Unmarshal(dataBlock, log)
+
+				if err == nil {
+					//添加到待写入数据
+					logData = append(logData, &models.OfflineLog{
+						TaskId:        taskId,
+						Sequence:      log.Sequence,
+						SystemVersion: log.SystemVersion,
+						AppVersion:    log.AppVersion,
+						TimeStamp:     log.Timestamp,
+						LogLevel:      int(log.LogLevel),
+						Identify:      log.Identify,
+						Tag:           log.Tag,
+						Msg:           log.Msg,
+					})
+				}
+
+				//检查是否达到最大批量大小，如果达到则写入数据库并清空切片
+				if len(logData) >= maxBatchSize {
+					p.writeToDatabase(logData)
+					logData = nil
+				}
 			}
-			dataBlock = decompressedBytes
-		}
-
-		log := &zlog.Log{}
-		err = proto.Unmarshal(dataBlock, log)
-
-		if err == nil {
-			//添加到待写入数据
-			logData = append(logData, &models.OfflineLog{
-				TaskId:        taskId,
-				Sequence:      log.Sequence,
-				SystemVersion: log.SystemVersion,
-				AppVersion:    log.AppVersion,
-				TimeStamp:     log.Timestamp,
-				LogLevel:      int(log.LogLevel),
-				Identify:      log.Identify,
-				Tag:           log.Tag,
-				Msg:           log.Msg,
-			})
-		}
-
-		//检查是否达到最大批量大小，如果达到则写入数据库并清空切片
-		if len(logData) >= maxBatchSize {
-			p.writeToDatabase(logData)
-			logData = nil
 		}
 	}
 
