@@ -29,7 +29,7 @@ func UploadLogFile(c *gin.Context) {
 		if err := utils.SaveFileToDirectory(file, utils.LogFileRootPath); err != nil {
 			output.Status = utils.ErrorCode
 			output.ErrMsg = "保存文件失败"
-		} else if notifyState, msg := models.NotifyTaskState(sessionId, taskId, 1); !notifyState {
+		} else if notifyState, msg := models.NotifyTaskState(sessionId, taskId, 2); !notifyState {
 			output.Status = utils.ErrorCode
 			output.ErrMsg = msg
 			//删除文件

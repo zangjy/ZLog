@@ -12,7 +12,7 @@ type Task struct {
 	StartTime  int64
 	EndTime    int64
 	TaskId     string `gorm:"unique"`
-	State      int    `gorm:"default:0;comment:-1:客户端无法发送日志文件，可能是没有日志文件等原因，此时需要客户端需要将原因提交到msg字段里 0:客户端未响应 1:已成功接受到日志文件"`
+	State      int    `gorm:"default:0;comment:-1:客户端无法发送日志文件，可能是没有日志文件等原因，此时需要客户端需要将原因提交到msg字段里 0:客户端未响应 1:已成功接受到日志文件 2:文件解析中"`
 	Msg        string
 }
 

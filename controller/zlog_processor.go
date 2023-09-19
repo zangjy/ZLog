@@ -127,6 +127,8 @@ func (p *zLogProcessor) processZipAndLogFiles(zipFilePath string) error {
 	//删除解压后的目录及其内容
 	_ = utils.DeleteDirectory(logFilesDir)
 
+	//标记任务已完成
+	_, _ = models.NotifyTaskState(sessionId, taskId, 1)
 	return nil
 }
 
@@ -165,10 +167,12 @@ func (p *zLogProcessor) processLogFiles(taskId string, logFilesDir string, keyPa
 		filePath := filepath.Join(logFilesDir, fileInfo.Name())
 		file, err := os.Open(filePath)
 		if err != nil {
+			_ = file.Close()
 			return err
 		}
 
 		if err := p.processLogFile(taskId, file, keyPair); err != nil {
+			_ = file.Close()
 			return err
 		}
 
