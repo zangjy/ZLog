@@ -67,8 +67,19 @@ func (p *zLogProcessor) processTasks() {
 				return
 			}
 
-			if err := p.processZipAndLogFiles(zipFilePath); err != nil {
+			//注意：只有解析日志文件失败或者成功才会返回sessionId和taskId
+			err, sessionId, taskId := p.processZipAndLogFiles(zipFilePath)
+			if err != nil {
 				fmt.Println(err)
+				if len(sessionId) > 0 && len(taskId) > 0 {
+					//标记任务失败
+					_, _ = models.NotifyTaskState(sessionId, taskId, 3)
+				}
+			} else {
+				if len(sessionId) > 0 && len(taskId) > 0 {
+					//标记任务成功
+					_, _ = models.NotifyTaskState(sessionId, taskId, 4)
+				}
 			}
 		case <-p.stopChan:
 			//收到停止信号
@@ -77,25 +88,25 @@ func (p *zLogProcessor) processTasks() {
 	}
 }
 
-func (p *zLogProcessor) processZipAndLogFiles(zipFilePath string) error {
+func (p *zLogProcessor) processZipAndLogFiles(zipFilePath string) (error, string, string) {
 	//文件名为任务Id
 	taskId := strings.TrimSuffix(filepath.Base(zipFilePath), filepath.Ext(zipFilePath))
 
 	//根据任务Id获取对应的SessionId
 	sessionId, err := models.GetSessionId(taskId)
 	if err != nil {
-		return err
+		return err, "", ""
 	}
 
 	//根据Session获取密钥对
 	keyPair, err := models.GetKeyPairBySessionId(sessionId)
 	if err != nil {
-		return err
+		return err, "", ""
 	}
 
 	zipFile, err := zip.OpenReader(zipFilePath)
 	if err != nil {
-		return err
+		return err, "", ""
 	}
 
 	logFilesDir := filepath.Join(p.baseDir, taskId+"_log_files")
@@ -103,12 +114,12 @@ func (p *zLogProcessor) processZipAndLogFiles(zipFilePath string) error {
 	_ = utils.DeleteDirectory(logFilesDir)
 	//再创建新的目录
 	if err := os.MkdirAll(logFilesDir, os.ModePerm); err != nil {
-		return err
+		return err, "", ""
 	}
 
 	//解压ZIP文件
 	if err := p.extractAndSaveFiles(zipFile, logFilesDir); err != nil {
-		return err
+		return err, "", ""
 	}
 
 	//关闭ZIP文件
@@ -116,20 +127,18 @@ func (p *zLogProcessor) processZipAndLogFiles(zipFilePath string) error {
 
 	//解析日志文件
 	if err := p.processLogFiles(taskId, logFilesDir, keyPair); err != nil {
-		return err
+		return err, sessionId, taskId
 	}
 
 	//删除ZIP文件
 	if err := os.Remove(zipFilePath); err != nil {
-		return err
+		return err, "", ""
 	}
 
 	//删除解压后的目录及其内容
 	_ = utils.DeleteDirectory(logFilesDir)
 
-	//标记任务已完成
-	_, _ = models.NotifyTaskState(sessionId, taskId, 1)
-	return nil
+	return nil, sessionId, taskId
 }
 
 func (p *zLogProcessor) extractAndSaveFiles(zipFile *zip.ReadCloser, logFilesDir string) error {

@@ -12,7 +12,7 @@ type Task struct {
 	StartTime  int64
 	EndTime    int64
 	TaskId     string `gorm:"unique"`
-	State      int    `gorm:"default:0;comment:-1:客户端无法发送日志文件，可能是没有日志文件等原因，此时需要客户端需要将原因提交到msg字段里 0:客户端未响应 1:已成功接受到日志文件 2:文件解析中"`
+	State      int    `gorm:"default:0;comment:0:客户端未响应 1:客户端无法发送日志文件，可能是没有日志文件等原因，此时需要客户端需要将原因提交到msg字段里 2:文件解析中 3:文件解析失败 4:已完成"`
 	Msg        string
 }
 
@@ -62,7 +62,7 @@ func NotifyTaskState(sessionId, taskId string, state int) (bool, string) {
 	defer mutex.Unlock()
 	if curState, err := getTaskState(sessionId, taskId); err != nil {
 		return false, "查询任务状态失败，请检查SessionId和TaskId是否对应"
-	} else if curState == 1 {
+	} else if curState == 4 {
 		return false, "该任务已处于完成状态"
 	} else if err := dao.DB.Table("task").Where("session_id = ? AND task_id = ?", sessionId, taskId).Update("state", state).Error; err != nil {
 		return false, "修改任务状态失败"
@@ -80,13 +80,16 @@ func NotifyTaskState(sessionId, taskId string, state int) (bool, string) {
 //  @return error
 //
 func NotifyTaskMsg(sessionId, taskId, msg string) (bool, string) {
+	var mutex sync.Mutex
+	mutex.Lock()
+	defer mutex.Unlock()
 	updateData := map[string]interface{}{
-		"state": -1,
+		"state": 1,
 		"msg":   msg,
 	}
 	if curState, err := getTaskState(sessionId, taskId); err != nil {
 		return false, "查询任务状态失败，请检查SessionId和TaskId是否对应"
-	} else if curState == 1 {
+	} else if curState == 4 {
 		return false, "该任务已处于完成状态"
 	} else if err := dao.DB.Table("task").Where("session_id = ? AND task_id = ?", sessionId, taskId).Updates(updateData).Error; err != nil {
 		return false, "修改失败"
@@ -103,6 +106,9 @@ func NotifyTaskMsg(sessionId, taskId, msg string) (bool, string) {
 //  @return error
 //
 func getTaskState(sessionId, taskId string) (int, error) {
+	var mutex sync.Mutex
+	mutex.Lock()
+	defer mutex.Unlock()
 	var state int
 	err := dao.DB.Table("task").Where("session_id = ? And task_id = ?", sessionId, taskId).Select("state").Scan(&state).Error
 	if err != nil {
