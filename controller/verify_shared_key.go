@@ -11,6 +11,7 @@ import (
 func VerifySharedKey(c *gin.Context) {
 	input := models.VerifySharedKeyInputStruct{}
 	output := models.VerifySharedKeyOutputStruct{}
+
 	_ = c.ShouldBindWith(&input, binding.JSON)
 
 	if len(input.TmpSessionId) == 0 || len(input.VerifyData) == 0 {

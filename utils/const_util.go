@@ -9,7 +9,7 @@ const (
 	ErrorCode          = "0001"
 	SessionId          = "SESSION_ID"
 	TmpSessionId       = "TMP_SESSION_ID"
-	Token              = "token"
+	Token              = "TOKEN"
 	LogFileRootPath    = "./static/zlog"
 )
 
@@ -20,8 +20,16 @@ const (
 	VerifySharedKeyPath      = "/verify_shared_key"
 	DeviceRegisterPath       = "/device_register"
 	CreateAppPath            = "/create_app"
+	DeleteAppPath            = "/delete_app"
 	PutOnlineLogPath         = "/put_online_log"
 	GetTaskPath              = "/get_task"
 	UploadLogFilePath        = "/upload_log_file"
 	UploadLogFileErrCallBack = "/upload_log_file_err_callback"
+	GetAppListPath           = "/get_app_list"
+	GetDeviceListPath        = "/get_device_list"
+	GetDeviceLogPath         = "/get_device_log"
+	GetAllTaskPath           = "/get_all_task"
+	CreateTaskPath           = "/create_task"
+	DeleteTaskPath           = "/delete_task"
+	GetTaskLogPath           = "/get_task_log"
 )

@@ -16,13 +16,14 @@ import (
 func Login(c *gin.Context) {
 	input := models.LoginInputStruct{}
 	output := models.LoginOutputStruct{}
+
 	_ = c.ShouldBindWith(&input, binding.JSON)
 
 	sessionId := utils.GetSessionID(c)
 
 	if len(input.UserName) == 0 || len(input.Password) == 0 || len(sessionId) == 0 {
 		output.Status = utils.ErrorCode
-		output.ErrMsg = "必要参数缺失"
+		output.ErrMsg = "user_name、password、session_id均不能为空"
 	} else {
 		if getUserInfoErr, user := models.GetUserInfo(input.UserName, input.Password); getUserInfoErr != nil {
 			output.Status = utils.ErrorCode

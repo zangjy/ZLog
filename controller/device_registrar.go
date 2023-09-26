@@ -11,12 +11,13 @@ import (
 func DeviceRegister(c *gin.Context) {
 	input := models.DeviceRegisterInputStruct{}
 	output := models.DeviceRegisterOutputStruct{}
+
 	_ = c.ShouldBindWith(&input, binding.JSON)
 
 	tmpSessionId := utils.GetSessionID(c)
 	if len(input.AppId) == 0 || input.DeviceType < 0 || len(input.DeviceName) == 0 || len(input.DeviceId) == 0 {
 		output.Status = utils.ErrorCode
-		output.ErrMsg = "必要参数缺失"
+		output.ErrMsg = "app_id、device_type、device_name、device_id均不能为空"
 	} else if keyPair, err := models.GetKeyPairBySessionId(tmpSessionId); err != nil {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "未找到此客户端的密钥对，请先和服务端进行公钥交换"

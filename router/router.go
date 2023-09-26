@@ -52,6 +52,22 @@ func SetUpRouter(addr string) (err error) {
 	{
 		//创建一个应用
 		group2.POST(utils.CreateAppPath, controller.CreateApp)
+		//删除一个应用
+		group2.POST(utils.DeleteAppPath, controller.DeleteApp)
+		//查询应用列表
+		group2.GET(utils.GetAppListPath, controller.GetAppList)
+		//查询应用下的设备列表
+		group2.GET(utils.GetDeviceListPath, controller.GetDeviceList)
+		//查询设备的日志
+		group2.GET(utils.GetDeviceLogPath, controller.GetDeviceLog)
+		//查询任务列表
+		group2.GET(utils.GetAllTaskPath, controller.GetAllTask)
+		//创建任务
+		group2.POST(utils.CreateTaskPath, controller.CreateTask)
+		//删除任务
+		group2.POST(utils.DeleteTaskPath, controller.DeleteTask)
+		//查询任务的日志
+		group2.GET(utils.GetTaskLogPath, controller.GetTaskLog)
 	}
 	//未匹配到路由时的处理
 	r.NoRoute(func(c *gin.Context) {

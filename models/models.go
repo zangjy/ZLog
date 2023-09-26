@@ -107,3 +107,153 @@ type UploadLogFileErrCallBackInputStruct struct {
 	TaskId string `json:"task_id"`
 	Msg    string `json:"msg"`
 }
+
+// GetAppListInputStruct 查询应用列表传入结构体
+type GetAppListInputStruct struct {
+	Page int `form:"page"`
+}
+
+// GetAppListOutputStruct 查询应用列表返回结构体
+type GetAppListOutputStruct struct {
+	DefaultOutputStruct
+	Data []GetAppListInfoStruct `json:"data"`
+}
+
+// GetAppListInfoStruct 应用列表结构体
+type GetAppListInfoStruct struct {
+	AppId      string `json:"app_id"`
+	AppName    string `json:"app_name"`
+	CreateTime int64  `json:"create_time"`
+}
+
+// DeleteAppInputStruct 删除应用传入结构体
+type DeleteAppInputStruct struct {
+	AppId string `json:"app_id"`
+}
+
+// GetDeviceListInputStruct 查询应用下的设备列表传入结构体
+type GetDeviceListInputStruct struct {
+	AppId    string `form:"app_id"`
+	Identify string `form:"identify"`
+	Page     int    `form:"page"`
+}
+
+// GetDeviceListOutputStruct 查询应用下的设备列表返回结构体
+type GetDeviceListOutputStruct struct {
+	DefaultOutputStruct
+	Data []GetDeviceListInfoStruct `json:"data"`
+}
+
+// GetDeviceListInfoStruct 设备列表结构体
+type GetDeviceListInfoStruct struct {
+	DeviceType int    `json:"device_type"`
+	DeviceName string `json:"device_name"`
+	DeviceId   string `json:"device_id"`
+}
+
+// GetDeviceLogInputStruct 查询设备的日志传入结构体
+type GetDeviceLogInputStruct struct {
+	Page          int    `form:"page"`
+	SessionId     string `form:"session_id"`
+	SystemVersion string `form:"system_version"`
+	AppVersion    string `form:"app_version"`
+	StartStamp    int64  `form:"start_stamp"`
+	EndStamp      int64  `form:"end_stamp"`
+	LogLevel      int    `form:"log_level"`
+	Identify      string `form:"identify"`
+	Tag           string `form:"tag"`
+	Msg           string `form:"msg"`
+}
+
+// GetDeviceLogOutputStruct 查询设备的日志返回结构体
+type GetDeviceLogOutputStruct struct {
+	DefaultOutputStruct
+	Data []GetDeviceLogInfoStruct `json:"data"`
+}
+
+// GetDeviceLogInfoStruct 设备日志结构体
+type GetDeviceLogInfoStruct struct {
+	Sequence      int64  `json:"sequence"`
+	SystemVersion string `json:"system_version"`
+	AppVersion    string `json:"app_version"`
+	TimeStamp     int64  `json:"time_stamp"`
+	LogLevel      int    `json:"log_level"`
+	Identify      string `json:"identify"`
+	Tag           string `json:"tag"`
+	Msg           string `json:"msg"`
+}
+
+// GetAllTaskInputStruct 查询任务列表传入结构体
+type GetAllTaskInputStruct struct {
+	Page int `form:"page"`
+}
+
+// GetAllTaskOutputStruct 查询任务列表返回结构体
+type GetAllTaskOutputStruct struct {
+	DefaultOutputStruct
+	Data []GetAllTaskInfoStruct `json:"data"`
+}
+
+// GetAllTaskInfoStruct 任务列表结构体
+type GetAllTaskInfoStruct struct {
+	TaskDes    string `json:"task_des"`
+	SessionId  string `json:"session_id"`
+	DeviceType int    `json:"device_type"`
+	StartTime  int64  `json:"start_time"`
+	EndTime    int64  `json:"end_time"`
+	TaskId     string `json:"task_id"`
+	State      int    `json:"state"`
+	Msg        string `json:"msg"`
+}
+
+// CreateTaskInputStruct 创建任务传入结构体
+type CreateTaskInputStruct struct {
+	TaskDes    string `json:"task_des"`
+	SessionId  string `json:"session_id"`
+	DeviceType int    `json:"device_type"`
+	StartTime  int64  `json:"start_time"`
+	EndTime    int64  `json:"end_time"`
+}
+
+// CreateTaskOutputStruct 创建任务返回结构体
+type CreateTaskOutputStruct struct {
+	DefaultOutputStruct
+	TaskId string `json:"task_id"`
+}
+
+// DeleteTaskInputStruct 删除任务传入结构体
+type DeleteTaskInputStruct struct {
+	TaskId string `json:"task_id"`
+}
+
+// GetTaskLogInputStruct 查询任务日志传入结构体
+type GetTaskLogInputStruct struct {
+	Page          int    `form:"page"`
+	TaskId        string `form:"task_id"`
+	SystemVersion string `form:"system_version"`
+	AppVersion    string `form:"app_version"`
+	StartStamp    int64  `form:"start_stamp"`
+	EndStamp      int64  `form:"end_stamp"`
+	LogLevel      int    `form:"log_level"`
+	Identify      string `form:"identify"`
+	Tag           string `form:"tag"`
+	Msg           string `form:"msg"`
+}
+
+// GetTaskLogOutputStruct 查询任务日志返回结构体
+type GetTaskLogOutputStruct struct {
+	DefaultOutputStruct
+	Data []GetTaskLogInfoStruct `json:"data"`
+}
+
+// GetTaskLogInfoStruct 任务日志结构体
+type GetTaskLogInfoStruct struct {
+	Sequence      int64  `json:"sequence"`
+	SystemVersion string `json:"system_version"`
+	AppVersion    string `json:"app_version"`
+	TimeStamp     int64  `json:"time_stamp"`
+	LogLevel      int    `json:"log_level"`
+	Identify      string `json:"identify"`
+	Tag           string `json:"tag"`
+	Msg           string `json:"msg"`
+}

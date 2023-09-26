@@ -2,11 +2,13 @@ package models
 
 import (
 	"ZLog/dao"
+	"ZLog/utils"
 	"sync"
 )
 
 type Task struct {
 	Id         uint `gorm:"primaryKey"`
+	TaskDes    string
 	SessionId  string
 	DeviceType int
 	StartTime  int64
@@ -14,6 +16,7 @@ type Task struct {
 	TaskId     string `gorm:"unique"`
 	State      int    `gorm:"default:0;comment:0:客户端未响应 1:客户端无法发送日志文件，可能是没有日志文件等原因，此时需要客户端需要将原因提交到msg字段里 2:文件解析中 3:文件解析失败 4:已完成"`
 	Msg        string
+	IsDel      int `gorm:"default:0"`
 }
 
 //
@@ -40,8 +43,8 @@ func GetSessionId(taskId string) (string, error) {
 //
 func GetTaskList(sessionId string, deviceType int) []GetTaskInfoStruct {
 	var result []GetTaskInfoStruct
-	dao.DB.Table("task").Where("session_id = ? AND device_type = ? AND state = 0", sessionId, deviceType).Find(&result)
-	if result == nil {
+	dao.DB.Table("task").Where("session_id = ? AND device_type = ? AND state = 0 AND is_del = 0", sessionId, deviceType).Find(&result)
+	if len(result) == 0 {
 		result = make([]GetTaskInfoStruct, 0)
 	}
 	return result
@@ -115,4 +118,59 @@ func getTaskState(sessionId, taskId string) (int, error) {
 		return 0, err
 	}
 	return state, nil
+}
+
+//
+// GetAllTask
+//  @Description: 查询所有任务
+//  @param page
+//  @return []GetTaskInfoStruct
+//
+func GetAllTask(page int) []GetAllTaskInfoStruct {
+	var result []GetAllTaskInfoStruct
+	dao.DB.Table("task").Where("is_del = 0").Offset((page - 1) * 10).Limit(10).Find(&result)
+	if len(result) == 0 {
+		result = make([]GetAllTaskInfoStruct, 0)
+	}
+	return result
+}
+
+//
+// CreateTask
+//  @Description: 创建任务
+//  @param taskDes
+//  @param sessionId
+//  @param deviceType
+//  @param startTime
+//  @param endTime
+//  @return string
+//  @return error
+//
+func CreateTask(taskDes string, sessionId string, deviceType int, startTime int64, endTime int64) (string, error) {
+	taskId := utils.WorkerInstance.GetId()
+	task := Task{
+		TaskDes:    taskDes,
+		SessionId:  sessionId,
+		DeviceType: deviceType,
+		StartTime:  startTime,
+		EndTime:    endTime,
+		TaskId:     taskId,
+	}
+	if err := dao.DB.Table("task").Create(&task).Error; err != nil {
+		return "", err
+	}
+	return taskId, nil
+}
+
+//
+// DeleteTask
+//  @Description: 删除任务
+//  @param taskId
+//  @return error
+//
+func DeleteTask(taskId string) error {
+	if err := dao.DB.Table("task").Where("task_id = ?", taskId).Update("is_del", 1).Error; err != nil {
+		return err
+	}
+	return nil
 }

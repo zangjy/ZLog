@@ -8,22 +8,21 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
-func UploadLogFileErrCallBack(c *gin.Context) {
-	input := models.UploadLogFileErrCallBackInputStruct{}
+func DeleteApp(c *gin.Context) {
+	input := models.DeleteAppInputStruct{}
 	output := models.DefaultOutputStruct{}
 
 	_ = c.ShouldBindWith(&input, binding.JSON)
 
-	sessionId := utils.GetSessionID(c)
-	if len(input.TaskId) == 0 || len(input.Msg) == 0 {
+	if len(input.AppId) == 0 {
 		output.Status = utils.ErrorCode
-		output.ErrMsg = "task_id和msg均不能为空"
-	} else if state, msg := models.NotifyTaskMsg(sessionId, input.TaskId, input.Msg); !state {
+		output.ErrMsg = "app_id不能为空"
+	} else if state := models.DeleteApp(input.AppId); !state {
 		output.Status = utils.ErrorCode
-		output.ErrMsg = msg
+		output.ErrMsg = "删除失败"
 	} else {
 		output.Status = utils.SuccessCode
-		output.ErrMsg = "操作成功"
+		output.ErrMsg = "删除成功"
 	}
 
 	middlewares.ProcessResultData(c, output)

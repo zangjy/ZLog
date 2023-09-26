@@ -11,11 +11,12 @@ import (
 func CreateApp(c *gin.Context) {
 	input := models.CreateAppInputStruct{}
 	output := models.CreateAppOutputStruct{}
+
 	_ = c.ShouldBindWith(&input, binding.JSON)
 
 	if len(input.AppName) == 0 {
 		output.Status = utils.ErrorCode
-		output.ErrMsg = "APP名称不能为空"
+		output.ErrMsg = "app_name不能为空"
 	} else {
 		if err, appId := models.CreateApp(input.AppName); err != nil {
 			output.Status = utils.ErrorCode

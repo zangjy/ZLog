@@ -11,6 +11,7 @@ import (
 func GetTask(c *gin.Context) {
 	input := models.GetTaskInputStruct{}
 	output := models.GetTaskOutputStruct{}
+
 	_ = c.ShouldBindWith(&input, binding.Query)
 
 	sessionId := utils.GetSessionID(c)

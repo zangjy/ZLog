@@ -13,11 +13,12 @@ import (
 func ExchangePubKey(c *gin.Context) {
 	input := models.ExchangePubKeyInputStruct{}
 	output := models.ExchangePubKeyOutputStruct{}
+
 	_ = c.ShouldBindWith(&input, binding.JSON)
 
 	if len(input.ClientPubKey) == 0 {
 		output.Status = utils.ErrorCode
-		output.ErrMsg = "必要参数缺失"
+		output.ErrMsg = "client_pub_key不能为空"
 	} else if sharedKey, err := utils.GenerateSharedSecret(input.ClientPubKey, conf.GlobalConf.ECDHCong.PrivKey); err != nil {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "未成功生成共享密钥，请重试"

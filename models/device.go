@@ -3,6 +3,7 @@ package models
 import (
 	"ZLog/dao"
 	"ZLog/utils"
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -36,7 +37,7 @@ func DeviceRegister(appId string, deviceType int, deviceName string, deviceId st
 	result := dao.DB.Table("device").Where("device_id = ?", deviceId).First(&existingDevice)
 
 	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			//记录不存在，创建新记录
 			newDevice := Device{
 				AppId:        appId,
@@ -94,4 +95,36 @@ func GetKeyPairBySessionId(sessionId string) (utils.KeyPair, error) {
 		PublicKey: device.ClientPubKey,
 		SharedKey: device.SharedKey,
 	}, nil
+}
+
+//
+// GetDeviceList
+//  @Description: 获取设备列表
+//  @param appId
+//  @param identify
+//  @param page
+//  @return []GetDeviceListInfoStruct
+//
+func GetDeviceList(appId, identify string, page int) []GetDeviceListInfoStruct {
+	var devices []GetDeviceListInfoStruct
+	db := dao.DB.Table("device")
+
+	// 构建查询条件
+	if len(identify) != 0 {
+		db = db.Joins("INNER JOIN online_log ON device.session_id = online_log.session_id").Where("device.app_id = ? AND online_log.identify = ?", appId, identify).Select("device.device_type, device.device_name, device.device_id").Group("online_log.session_id")
+	} else {
+		db = db.Where("device.app_id = ?", appId).Select("device.device_type, device.device_name, device.device_id")
+	}
+
+	pageSize := 10
+	offset := (page - 1) * pageSize
+	db = db.Offset(offset).Limit(pageSize).Order("device.id DESC")
+
+	db.Find(&devices)
+
+	if len(devices) == 0 {
+		devices = make([]GetDeviceListInfoStruct, 0)
+	}
+
+	return devices
 }
