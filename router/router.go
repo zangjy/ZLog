@@ -5,6 +5,7 @@ import (
 	"ZLog/middlewares"
 	"ZLog/models"
 	"ZLog/utils"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-colorable"
 	"net/http"
@@ -25,6 +26,10 @@ func SetUpRouter(addr string) (err error) {
 	gin.ForceConsoleColor()
 	//默认配置
 	r := gin.Default()
+	//使用CORS中间件，允许所有来源的请求
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	r.Use(cors.New(config))
 	//使用解密并解压缩中间件
 	r.Use(middlewares.DecryptAndDeCompressMiddleware())
 	//该分组不校验Token
