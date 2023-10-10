@@ -26,9 +26,10 @@ func SetUpRouter(addr string) (err error) {
 	gin.ForceConsoleColor()
 	//默认配置
 	r := gin.Default()
-	//使用CORS中间件，允许所有来源的请求
+	//使用CORS中间件，配置允许所有域名访问，并允许携带指定的请求头字段
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
+	config.AllowHeaders = append(config.AllowHeaders, "TMP_SESSION_ID", "SESSION_ID", "TOKEN")
 	r.Use(cors.New(config))
 	//使用解密并解压缩中间件
 	r.Use(middlewares.DecryptAndDeCompressMiddleware())

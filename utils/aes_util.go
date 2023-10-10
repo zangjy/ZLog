@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"strings"
 )
 
 const (
@@ -122,9 +123,11 @@ func adjustKeySize(key string) string {
 	if keyLength == 16 || keyLength == 24 || keyLength == 32 {
 		return key
 	} else if keyLength < 16 {
-		return key + string(make([]byte, 16-keyLength))
+		padding := strings.Repeat("0", 16-keyLength)
+		return key + padding
 	} else if keyLength < 24 {
-		return key + string(make([]byte, 24-keyLength))
+		padding := strings.Repeat("0", 24-keyLength)
+		return key + padding
 	} else {
 		return key[:32]
 	}
