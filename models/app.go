@@ -42,9 +42,10 @@ func DeleteApp(appId string) bool {
 // GetAppList
 //  @Description: 获取APP列表
 //  @param page
+//  @return int
 //  @return []GetAppListInfoStruct
 //
-func GetAppList(page int) []GetAppListInfoStruct {
+func GetAppList(page int) (int64, []GetAppListInfoStruct) {
 	var result []GetAppListInfoStruct
 	db := dao.DB.Table("app").Where("is_del = ?", 0)
 
@@ -54,9 +55,8 @@ func GetAppList(page int) []GetAppListInfoStruct {
 
 	db.Find(&result)
 
-	if len(result) == 0 {
-		result = make([]GetAppListInfoStruct, 0)
-	}
+	count := int64(0)
+	db.Model(&GetAppListInfoStruct{}).Count(&count)
 
-	return result
+	return count, result
 }

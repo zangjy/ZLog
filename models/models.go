@@ -116,7 +116,8 @@ type GetAppListInputStruct struct {
 // GetAppListOutputStruct 查询应用列表返回结构体
 type GetAppListOutputStruct struct {
 	DefaultOutputStruct
-	Data []GetAppListInfoStruct `json:"data"`
+	Count int64                  `json:"count"`
+	Data  []GetAppListInfoStruct `json:"data"`
 }
 
 // GetAppListInfoStruct 应用列表结构体
@@ -141,7 +142,8 @@ type GetDeviceListInputStruct struct {
 // GetDeviceListOutputStruct 查询应用下的设备列表返回结构体
 type GetDeviceListOutputStruct struct {
 	DefaultOutputStruct
-	Data []GetDeviceListInfoStruct `json:"data"`
+	Count int64                     `json:"count"`
+	Data  []GetDeviceListInfoStruct `json:"data"`
 }
 
 // GetDeviceListInfoStruct 设备列表结构体
@@ -149,6 +151,7 @@ type GetDeviceListInfoStruct struct {
 	DeviceType int    `json:"device_type"`
 	DeviceName string `json:"device_name"`
 	DeviceId   string `json:"device_id"`
+	SessionId  string `json:"session_id"`
 }
 
 // GetDeviceLogInputStruct 查询设备的日志传入结构体
@@ -168,7 +171,8 @@ type GetDeviceLogInputStruct struct {
 // GetDeviceLogOutputStruct 查询设备的日志返回结构体
 type GetDeviceLogOutputStruct struct {
 	DefaultOutputStruct
-	Data []GetDeviceLogInfoStruct `json:"data"`
+	Count int64                    `json:"count"`
+	Data  []GetDeviceLogInfoStruct `json:"data"`
 }
 
 // GetDeviceLogInfoStruct 设备日志结构体
@@ -185,13 +189,16 @@ type GetDeviceLogInfoStruct struct {
 
 // GetAllTaskInputStruct 查询任务列表传入结构体
 type GetAllTaskInputStruct struct {
-	Page int `form:"page"`
+	AppId   string `form:"app_id"`
+	TaskDes string `form:"task_des"`
+	Page    int    `form:"page"`
 }
 
 // GetAllTaskOutputStruct 查询任务列表返回结构体
 type GetAllTaskOutputStruct struct {
 	DefaultOutputStruct
-	Data []GetAllTaskInfoStruct `json:"data"`
+	Count int64                  `json:"count"`
+	Data  []GetAllTaskInfoStruct `json:"data"`
 }
 
 // GetAllTaskInfoStruct 任务列表结构体
@@ -208,6 +215,7 @@ type GetAllTaskInfoStruct struct {
 
 // CreateTaskInputStruct 创建任务传入结构体
 type CreateTaskInputStruct struct {
+	AppId      string `json:"app_id"`
 	TaskDes    string `json:"task_des"`
 	SessionId  string `json:"session_id"`
 	DeviceType int    `json:"device_type"`
@@ -243,7 +251,8 @@ type GetTaskLogInputStruct struct {
 // GetTaskLogOutputStruct 查询任务日志返回结构体
 type GetTaskLogOutputStruct struct {
 	DefaultOutputStruct
-	Data []GetTaskLogInfoStruct `json:"data"`
+	Count int64                  `json:"count"`
+	Data  []GetTaskLogInfoStruct `json:"data"`
 }
 
 // GetTaskLogInfoStruct 任务日志结构体

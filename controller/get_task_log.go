@@ -18,9 +18,12 @@ func GetTaskLog(c *gin.Context) {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "task_id不能为空且page必须大于0"
 	} else {
+		count, data := models.GetTaskLog(input)
+
 		output.Status = utils.SuccessCode
 		output.ErrMsg = "查询成功"
-		output.Data = models.GetTaskLog(input)
+		output.Count = count
+		output.Data = data
 	}
 
 	middlewares.ProcessResultData(c, output)

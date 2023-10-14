@@ -31,11 +31,12 @@ func WriteOnlineLogs(logs []*OnlineLog) error {
 
 //
 // GetDeviceLogs
-//  @Description: 查询设备日志
+//  @Description: 查询设备的日志
 //  @param input
+//  @return int64
 //  @return []GetDeviceLogInfoStruct
 //
-func GetDeviceLogs(input GetDeviceLogInputStruct) []GetDeviceLogInfoStruct {
+func GetDeviceLogs(input GetDeviceLogInputStruct) (int64, []GetDeviceLogInfoStruct) {
 	db := dao.DB.Table("online_log").Where("1 = 1")
 
 	if len(input.SessionId) > 0 {
@@ -47,13 +48,13 @@ func GetDeviceLogs(input GetDeviceLogInputStruct) []GetDeviceLogInfoStruct {
 	if len(input.AppVersion) > 0 {
 		db = db.Where("app_version LIKE ?", "%"+input.AppVersion+"%")
 	}
-	if input.StartStamp != 0 {
+	if input.StartStamp > 0 {
 		db = db.Where("time_stamp >= ?", input.StartStamp)
 	}
-	if input.EndStamp != 0 {
+	if input.EndStamp > 0 {
 		db = db.Where("time_stamp <= ?", input.EndStamp)
 	}
-	if input.LogLevel != 0 {
+	if input.LogLevel >= 0 {
 		db = db.Where("log_level = ?", input.LogLevel)
 	}
 	if len(input.Identify) > 0 {
@@ -65,6 +66,9 @@ func GetDeviceLogs(input GetDeviceLogInputStruct) []GetDeviceLogInfoStruct {
 	if len(input.Msg) > 0 {
 		db = db.Where("msg LIKE ?", "%"+input.Msg+"%")
 	}
+
+	var count int64
+	db.Model(&GetDeviceLogInfoStruct{}).Count(&count)
 
 	pageSize := 10
 	if input.Page < 1 {
@@ -80,5 +84,5 @@ func GetDeviceLogs(input GetDeviceLogInputStruct) []GetDeviceLogInfoStruct {
 		logs = make([]GetDeviceLogInfoStruct, 0)
 	}
 
-	return logs
+	return count, logs
 }

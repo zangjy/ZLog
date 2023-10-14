@@ -18,9 +18,12 @@ func GetDeviceLog(c *gin.Context) {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "session_id不能为空且page必须大于0"
 	} else {
+		count, data := models.GetDeviceLogs(input)
+
 		output.Status = utils.SuccessCode
 		output.ErrMsg = "查询成功"
-		output.Data = models.GetDeviceLogs(input)
+		output.Count = count
+		output.Data = data
 	}
 
 	middlewares.ProcessResultData(c, output)

@@ -8,6 +8,7 @@ import (
 
 type Task struct {
 	Id         uint `gorm:"primaryKey"`
+	AppId      string
 	TaskDes    string
 	SessionId  string
 	DeviceType int
@@ -123,21 +124,36 @@ func getTaskState(sessionId, taskId string) (int, error) {
 //
 // GetAllTask
 //  @Description: 查询所有任务
+//  @param appId
+//  @param taskDes
 //  @param page
-//  @return []GetTaskInfoStruct
+//  @return int64
+//  @return []GetAllTaskInfoStruct
 //
-func GetAllTask(page int) []GetAllTaskInfoStruct {
+func GetAllTask(appId string, taskDes string, page int) (int64, []GetAllTaskInfoStruct) {
 	var result []GetAllTaskInfoStruct
-	dao.DB.Table("task").Where("is_del = 0").Offset((page - 1) * 10).Limit(10).Find(&result)
+	db := dao.DB.Table("task").Where("app_id = ? AND is_del = 0", appId)
+
+	if len(taskDes) > 0 {
+		db = db.Where("task_des LIKE ?", "%"+taskDes+"%")
+	}
+
+	db.Offset((page - 1) * 10).Limit(10).Find(&result)
+
 	if len(result) == 0 {
 		result = make([]GetAllTaskInfoStruct, 0)
 	}
-	return result
+
+	var count int64
+	db.Model(&GetAllTaskInfoStruct{}).Where("is_del = 0").Count(&count)
+
+	return count, result
 }
 
 //
 // CreateTask
 //  @Description: 创建任务
+//  @param appId
 //  @param taskDes
 //  @param sessionId
 //  @param deviceType
@@ -146,9 +162,10 @@ func GetAllTask(page int) []GetAllTaskInfoStruct {
 //  @return string
 //  @return error
 //
-func CreateTask(taskDes string, sessionId string, deviceType int, startTime int64, endTime int64) (string, error) {
+func CreateTask(appId string, taskDes string, sessionId string, deviceType int, startTime int64, endTime int64) (string, error) {
 	taskId := utils.WorkerInstance.GetId()
 	task := Task{
+		AppId:      appId,
 		TaskDes:    taskDes,
 		SessionId:  sessionId,
 		DeviceType: deviceType,

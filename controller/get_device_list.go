@@ -18,9 +18,12 @@ func GetDeviceList(c *gin.Context) {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "app_id不能为空且page必须大于0"
 	} else {
+		count, data := models.GetDeviceList(input.AppId, input.Identify, input.Page)
+
 		output.Status = utils.SuccessCode
 		output.ErrMsg = "查询成功"
-		output.Data = models.GetDeviceList(input.AppId, input.Identify, input.Page)
+		output.Count = count
+		output.Data = data
 	}
 
 	middlewares.ProcessResultData(c, output)

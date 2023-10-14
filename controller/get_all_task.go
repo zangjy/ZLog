@@ -14,13 +14,16 @@ func GetAllTask(c *gin.Context) {
 
 	_ = c.ShouldBindWith(&input, binding.Query)
 
-	if input.Page <= 0 {
+	if len(input.AppId) == 0 || input.Page <= 0 {
 		output.Status = utils.ErrorCode
-		output.ErrMsg = "page必须大于0"
+		output.ErrMsg = "app_id不能为空且page必须大于0"
 	} else {
+		count, data := models.GetAllTask(input.AppId, input.TaskDes, input.Page)
+
 		output.Status = utils.SuccessCode
 		output.ErrMsg = "查询成功"
-		output.Data = models.GetAllTask(input.Page)
+		output.Count = count
+		output.Data = data
 	}
 
 	middlewares.ProcessResultData(c, output)

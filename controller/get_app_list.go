@@ -18,9 +18,12 @@ func GetAppList(c *gin.Context) {
 		output.Status = utils.ErrorCode
 		output.ErrMsg = "page必须大于0"
 	} else {
+		count, list := models.GetAppList(input.Page)
+
 		output.Status = utils.SuccessCode
 		output.ErrMsg = "查询成功"
-		output.Data = models.GetAppList(input.Page)
+		output.Count = count
+		output.Data = list
 	}
 
 	middlewares.ProcessResultData(c, output)

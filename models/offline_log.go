@@ -36,9 +36,10 @@ func WriteOfflineLogs(logs []*OfflineLog) error {
 // GetTaskLog
 //  @Description: 查询任务日志
 //  @param input
+//  @return int64
 //  @return []GetTaskLogInfoStruct
 //
-func GetTaskLog(input GetTaskLogInputStruct) []GetTaskLogInfoStruct {
+func GetTaskLog(input GetTaskLogInputStruct) (int64, []GetTaskLogInfoStruct) {
 	db := dao.DB.Table("offline_log").Where("1 = 1")
 
 	if len(input.TaskId) > 0 {
@@ -50,13 +51,13 @@ func GetTaskLog(input GetTaskLogInputStruct) []GetTaskLogInfoStruct {
 	if len(input.AppVersion) > 0 {
 		db = db.Where("app_version LIKE ?", "%"+input.AppVersion+"%")
 	}
-	if input.StartStamp != 0 {
+	if input.StartStamp > 0 {
 		db = db.Where("time_stamp >= ?", input.StartStamp)
 	}
-	if input.EndStamp != 0 {
+	if input.EndStamp > 0 {
 		db = db.Where("time_stamp <= ?", input.EndStamp)
 	}
-	if input.LogLevel != 0 {
+	if input.LogLevel >= 0 {
 		db = db.Where("log_level = ?", input.LogLevel)
 	}
 	if len(input.Identify) > 0 {
@@ -76,6 +77,9 @@ func GetTaskLog(input GetTaskLogInputStruct) []GetTaskLogInfoStruct {
 	offset := (input.Page - 1) * pageSize
 	db = db.Offset(offset).Limit(pageSize)
 
+	var count int64
+	db.Model(&GetTaskLogInfoStruct{}).Count(&count)
+
 	var logs []GetTaskLogInfoStruct
 	db.Select("sequence, system_version, app_version, time_stamp, log_level, identify, tag, msg").Find(&logs)
 
@@ -83,5 +87,5 @@ func GetTaskLog(input GetTaskLogInputStruct) []GetTaskLogInfoStruct {
 		logs = make([]GetTaskLogInfoStruct, 0)
 	}
 
-	return logs
+	return count, logs
 }

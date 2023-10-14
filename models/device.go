@@ -10,7 +10,7 @@ import (
 type Device struct {
 	Id           uint `gorm:"primaryKey"`
 	AppId        string
-	DeviceType   int
+	DeviceType   int `gorm:"comment:1:Android 2:IOS"`
 	DeviceName   string
 	DeviceId     string `gorm:"unique"`
 	ClientPubKey string
@@ -103,18 +103,21 @@ func GetKeyPairBySessionId(sessionId string) (utils.KeyPair, error) {
 //  @param appId
 //  @param identify
 //  @param page
+//  @return int
 //  @return []GetDeviceListInfoStruct
 //
-func GetDeviceList(appId, identify string, page int) []GetDeviceListInfoStruct {
+func GetDeviceList(appId, identify string, page int) (int64, []GetDeviceListInfoStruct) {
 	var devices []GetDeviceListInfoStruct
 	db := dao.DB.Table("device")
 
-	// 构建查询条件
 	if len(identify) != 0 {
-		db = db.Joins("INNER JOIN online_log ON device.session_id = online_log.session_id").Where("device.app_id = ? AND online_log.identify = ?", appId, identify).Select("device.device_type, device.device_name, device.device_id").Group("online_log.session_id")
+		db = db.Joins("INNER JOIN online_log ON device.session_id = online_log.session_id").Where("device.app_id = ? AND online_log.identify LIKE ?", appId, "%"+identify+"%").Select("device.device_type, device.device_name, device.device_id, device.session_id").Group("online_log.session_id")
 	} else {
-		db = db.Where("device.app_id = ?", appId).Select("device.device_type, device.device_name, device.device_id")
+		db = db.Where("device.app_id = ?", appId).Select("device.device_type, device.device_name, device.device_id, device.session_id")
 	}
+
+	var count int64
+	db.Model(&GetDeviceListInfoStruct{}).Count(&count)
 
 	pageSize := 10
 	offset := (page - 1) * pageSize
@@ -122,9 +125,5 @@ func GetDeviceList(appId, identify string, page int) []GetDeviceListInfoStruct {
 
 	db.Find(&devices)
 
-	if len(devices) == 0 {
-		devices = make([]GetDeviceListInfoStruct, 0)
-	}
-
-	return devices
+	return count, devices
 }
