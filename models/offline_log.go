@@ -70,6 +70,8 @@ func GetTaskLog(input GetTaskLogInputStruct) (int64, []GetTaskLogInfoStruct) {
 		db = db.Where("msg LIKE ?", "%"+input.Msg+"%")
 	}
 
+	db = db.Order("time_stamp DESC")
+
 	pageSize := 10
 	if input.Page < 1 {
 		input.Page = 1

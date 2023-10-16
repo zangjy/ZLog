@@ -138,6 +138,8 @@ func GetAllTask(appId string, taskDes string, page int) (int64, []GetAllTaskInfo
 		db = db.Where("task_des LIKE ?", "%"+taskDes+"%")
 	}
 
+	db = db.Order("id DESC")
+
 	db.Offset((page - 1) * 10).Limit(10).Find(&result)
 
 	if len(result) == 0 {

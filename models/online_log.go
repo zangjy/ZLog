@@ -67,6 +67,8 @@ func GetDeviceLogs(input GetDeviceLogInputStruct) (int64, []GetDeviceLogInfoStru
 		db = db.Where("msg LIKE ?", "%"+input.Msg+"%")
 	}
 
+	db = db.Order("time_stamp DESC")
+
 	var count int64
 	db.Model(&GetDeviceLogInfoStruct{}).Count(&count)
 
