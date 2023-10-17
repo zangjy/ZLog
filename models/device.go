@@ -12,7 +12,7 @@ type Device struct {
 	AppId        string
 	DeviceType   int `gorm:"comment:1:Android 2:IOS"`
 	DeviceName   string
-	DeviceId     string `gorm:"unique"`
+	DeviceId     string
 	ClientPubKey string
 	SharedKey    string
 	SessionID    string `gorm:"unique"`
@@ -34,7 +34,7 @@ type Device struct {
 func DeviceRegister(appId string, deviceType int, deviceName string, deviceId string, clientPubKey string, sharedKey string, TmpSessionId string) (string, bool) {
 	//在数据库中查找记录
 	var existingDevice Device
-	result := dao.DB.Table("device").Where("device_id = ?", deviceId).First(&existingDevice)
+	result := dao.DB.Table("device").Where("app_id = ? AND device_id = ?", appId, deviceId).First(&existingDevice)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
