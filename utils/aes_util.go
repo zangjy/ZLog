@@ -116,20 +116,34 @@ func DecryptBytes(data []byte, key string) ([]byte, error) {
 	return plainText, nil
 }
 
-// adjustKeySize 处理密钥长度，确保它是16、24或32字节长
+//// adjustKeySize 处理密钥长度，确保它是16、24或32字节长
+//func adjustKeySize(key string) string {
+//	keyLength := len(key)
+//
+//	if keyLength == 16 || keyLength == 24 || keyLength == 32 {
+//		return key
+//	} else if keyLength < 16 {
+//		padding := strings.Repeat("0", 16-keyLength)
+//		return key + padding
+//	} else if keyLength < 24 {
+//		padding := strings.Repeat("0", 24-keyLength)
+//		return key + padding
+//	} else {
+//		return key[:32]
+//	}
+//}
+
+// adjustKeySize 处理密钥长度，确保它是16字节长
 func adjustKeySize(key string) string {
 	keyLength := len(key)
 
-	if keyLength == 16 || keyLength == 24 || keyLength == 32 {
+	if keyLength == 16 {
 		return key
 	} else if keyLength < 16 {
 		padding := strings.Repeat("0", 16-keyLength)
 		return key + padding
-	} else if keyLength < 24 {
-		padding := strings.Repeat("0", 24-keyLength)
-		return key + padding
 	} else {
-		return key[:32]
+		return key[:16]
 	}
 }
 
