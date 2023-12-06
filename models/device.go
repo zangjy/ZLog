@@ -125,5 +125,17 @@ func GetDeviceList(appId, identify string, page int) (int64, []GetDeviceListInfo
 
 	db.Find(&devices)
 
+	for i := range devices {
+		var deviceInfo struct {
+			LogCount   int64
+			LastActive int64
+		}
+
+		dao.DB.Table("online_log").Where("session_id = ?", devices[i].SessionId).Select("COUNT(*) as log_count, MAX(time_stamp) as last_active").Scan(&deviceInfo)
+
+		devices[i].LogCount = deviceInfo.LogCount
+		devices[i].LastActive = deviceInfo.LastActive
+	}
+
 	return count, devices
 }

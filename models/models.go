@@ -151,6 +151,8 @@ type GetDeviceListInfoStruct struct {
 	DeviceType int    `json:"device_type"`
 	DeviceName string `json:"device_name"`
 	DeviceId   string `json:"device_id"`
+	LogCount   int64  `json:"log_count"`
+	LastActive int64  `json:"last_active"`
 	SessionId  string `json:"session_id"`
 }
 
