@@ -15,12 +15,11 @@ type OnlineLog struct {
 	Msg           string
 }
 
-//
 // WriteOnlineLogs
-//  @Description: 批量写入数据
-//  @param logs
-//  @return error
 //
+//	@Description: 批量写入数据
+//	@param logs
+//	@return error
 func WriteOnlineLogs(logs []*OnlineLog) error {
 	//批量写入数据
 	if err := dao.DB.Table("online_log").Create(logs).Error; err != nil {
@@ -29,13 +28,12 @@ func WriteOnlineLogs(logs []*OnlineLog) error {
 	return nil
 }
 
-//
 // GetDeviceLogs
-//  @Description: 查询设备的日志
-//  @param input
-//  @return int64
-//  @return []GetDeviceLogInfoStruct
 //
+//	@Description: 查询设备的日志
+//	@param input
+//	@return int64
+//	@return []GetDeviceLogInfoStruct
 func GetDeviceLogs(input GetDeviceLogInputStruct) (int64, []GetDeviceLogInfoStruct) {
 	db := dao.DB.Table("online_log").Where("1 = 1")
 
@@ -67,7 +65,7 @@ func GetDeviceLogs(input GetDeviceLogInputStruct) (int64, []GetDeviceLogInfoStru
 		db = db.Where("msg LIKE ?", "%"+input.Msg+"%")
 	}
 
-	db = db.Order("time_stamp DESC")
+	db = db.Order("id DESC")
 
 	var count int64
 	db.Model(&GetDeviceLogInfoStruct{}).Count(&count)
